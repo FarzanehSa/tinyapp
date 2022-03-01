@@ -16,5 +16,8 @@
   "bugs": {
     "url": "https://github.com/FarzanehSa/tinyapp/issues"
   },
-  "homepage": "https://github.com/FarzanehSa/tinyapp#readme"
+  "homepage": "https://github.com/FarzanehSa/tinyapp#readme",
+  "dependencies": {
+    "express": "^4.17.3"
+  }
 }
