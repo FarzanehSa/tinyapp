@@ -31,8 +31,13 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.get("/urls/:shortURL", (req,res) => {
-  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL]};
-  res.render("urls_show", templateVars)
+  if (urlDatabase[req.params.shortURL]) {
+    const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL]};
+    res.render("urls_show", templateVars)
+  } else {
+    res.statusCode = 404;
+    res.render("urls_error")
+    }
 });
 
 app.post("/urls", (req, res) => {
@@ -42,7 +47,7 @@ app.post("/urls", (req, res) => {
 });
 
 app.get("/u/:shortURL", (req,res) => {
-  res.redirect(`${urlDatabase[req.params.shortURL]}`)
+    res.redirect(`${urlDatabase[req.params.shortURL]}`)
 });
 
 app.post("/urls/:shortURL/delete", (req,res) => {
