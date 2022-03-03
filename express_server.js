@@ -30,6 +30,7 @@ app.get("/urls/new", (req, res) => {
   res.render("urls_new");
 });
 
+// render urls/shortURL to the show page or error page
 app.get("/urls/:shortURL", (req,res) => {
   if (urlDatabase[req.params.shortURL]) {
     const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL]};
@@ -40,22 +41,30 @@ app.get("/urls/:shortURL", (req,res) => {
     }
 });
 
+// add new url, Add row to urlDB and redirect to show/edit page
 app.post("/urls", (req, res) => {
   const shortURL = generateRandomString();
   urlDatabase[shortURL] = req.body.longURL
   res.redirect(`/urls/${shortURL}`) 
 });
 
+// link of the shortURL will redirect to it's longURL
 app.get("/u/:shortURL", (req,res) => {
     res.redirect(`${urlDatabase[req.params.shortURL]}`)
 });
 
+// delete button from main page - Delete row in urlDB and redirect to main page.
 app.post("/urls/:shortURL/delete", (req,res) => {
   delete urlDatabase[req.params.shortURL]
   res.redirect("/urls")
 })
 
-// edit longURL
+// Edit button from main page will redirect to the show/edit page
+app.post("/urls/:shortURL", (req,res) => {
+  res.redirect(`/urls/${req.params.shortURL}`)
+})
+
+// edit longURL & then redirect to main page.
 app.post("/urls/:shortURL/edit", (req,res) => {
   urlDatabase[req.params.shortURL] = req.body.longURL;
   res.redirect("/urls");
