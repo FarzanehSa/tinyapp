@@ -1,20 +1,29 @@
 const express = require("express");
+const morgan = require("morgan");
+const bodyParser = require("body-parser");
+const cookie = require("cookie-parser");
+
 const app = express();
 const PORT = 8080; // default port 8080
 
-const bodyParser = require("body-parser");
+app.set("view engine", "ejs");
+app.use(morgan("dev"));
 app.use(bodyParser.urlencoded({extended: true}));
 
-app.set("view engine", "ejs");
-
+// generating random alphanumeric length 6 for shortURL
 function generateRandomString() {
   return Math.random().toString(36).slice(2,8);
 }
 
+// startpoint Database
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
 };
+
+app.listen(PORT, () => {
+  console.log(`Example app listening on port ${PORT}!`);
+});
 
 app.get("/", (req, res) => {
   res.send("Hello!");
@@ -72,8 +81,4 @@ app.post("/urls/:shortURL/edit", (req,res) => {
 
 app.get("/hello", (req, res) => {
   res.send("<html><body>Hello <b>World</b></body></html>\n");
-});
-
-app.listen(PORT, () => {
-  console.log(`Example app listening on port ${PORT}!`);
 });
