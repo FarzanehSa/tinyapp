@@ -22,6 +22,8 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+app.use(express.static("public"));
+
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
