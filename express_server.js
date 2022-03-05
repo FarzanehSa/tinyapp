@@ -26,12 +26,11 @@ app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
 
-app.get("/", (req, res) => {
-  res.send("Hello!");
-});
-
+// render to 'index view' with DB & Username Variables
 app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase };
+  const templateVars = { 
+    username: req.cookies.username,
+    urls: urlDatabase };
   res.render("urls_index", templateVars);
 });
 
@@ -82,4 +81,12 @@ app.post("/urls/:shortURL/edit", (req,res) => {
 
 app.get("/hello", (req, res) => {
   res.send("<html><body>Hello <b>World</b></body></html>\n");
+});
+
+app.post("/login", (req, res) => {
+  const username = req.body.username;
+  if (username.length !== 0) {
+    res.cookie('username', req.body.username);
+  }
+  res.redirect("/urls");
 });
