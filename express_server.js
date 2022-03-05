@@ -11,7 +11,7 @@ app.use(morgan("dev"));
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieParser());
 
-// generating random alphanumeric length 6 for shortURL
+// generating random alphanumeric length 6 for shortURL 🟢
 function generateRandomString() {
   return Math.random().toString(36).slice(2,8);
 }
@@ -26,7 +26,7 @@ app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
 
-// render to 'index view' with DB & Username Variables
+// render to 'index view' with DB & Username Variables 🟢
 app.get("/urls", (req, res) => {
   const templateVars = { 
     username: req.cookies.username,
@@ -34,19 +34,28 @@ app.get("/urls", (req, res) => {
   res.render("urls_index", templateVars);
 });
 
-// GET route to show the form
+// render to 'new view' with Username Variables 🟢
 app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
+  const templateVars = {
+    username: req.cookies.username
+  };
+  res.render("urls_new", templateVars);
 });
 
-// render urls/shortURL to the show page or error page
+// render to 'show view' or 'error view' with Username Variables 🟢
 app.get("/urls/:shortURL", (req,res) => {
+  // if the shortURL is not in DB, render error view
   if (urlDatabase[req.params.shortURL]) {
-    const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL]};
+    const templateVars = {
+      shortURL: req.params.shortURL,
+      longURL: urlDatabase[req.params.shortURL],
+      username: req.cookies.username
+    };
     res.render("urls_show", templateVars)
   } else {
+    const templateVars = {username: req.cookies.username};
     res.statusCode = 404;
-    res.render("urls_error")
+    res.render("urls_error", templateVars)
     }
 });
 
@@ -83,10 +92,16 @@ app.get("/hello", (req, res) => {
   res.send("<html><body>Hello <b>World</b></body></html>\n");
 });
 
+// set cookie w/ username
 app.post("/login", (req, res) => {
   const username = req.body.username;
   if (username.length !== 0) {
     res.cookie('username', req.body.username);
   }
+  res.redirect("/urls");
+});
+
+app.post("/logout", (req, res) => {
+  res.clearCookie('username');
   res.redirect("/urls");
 });
