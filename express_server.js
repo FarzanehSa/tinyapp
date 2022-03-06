@@ -12,18 +12,18 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieParser());
 app.use(express.static("public")); // dir public is root for images that we have.
 
-// generating random alphanumeric length 6 for shortURL 🟢
+// generating random alphanumeric length 6 for shortURL & userID 🟣
 const generateRandomString = function() {
   return Math.random().toString(36).slice(2,8);
 };
 
-// startpoint Database 🟢
+// startpoint urlsDB 🟣
 const urlDatabase = {
   // "b2xVn2": "http://www.lighthouselabs.ca",
   // "9sm5xK": "http://www.google.com"
 };
 
-// 🚨
+// startpoint userDB 🟣
 const users = { 
 //   "userRandomID": {
 //     id: "userRandomID", 
@@ -35,13 +35,13 @@ const users = {
 //     email: "user2@example.com", 
 //     password: "dishwasher-funk"
 //   }
-}
+};
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
 
-// render to 'index view' with DB & user Variables 🟢🟠
+// render index template with DB & user Variables 🟣
 app.get("/urls", (req, res) => {
   const templateVars = {
     user: users[req.cookies.user_id],
@@ -51,15 +51,15 @@ app.get("/urls", (req, res) => {
   res.render("urls_index", templateVars);
 });
 
-// 🚨 
+// render registration template 🟠 ❓ pass user
 app.get("/register", (req, res) => {
   const templateVars = {
     user: users[req.cookies.user_id]
   };
-  res.render("urls_register", templateVars);
+  res.render("registeration", templateVars);
 });
 
-// render to 'new view' with user Variable 🟢🟠
+// render new template with user Variable 🟣
 app.get("/urls/new", (req, res) => {
   const templateVars = {
     user: users[req.cookies.user_id]
@@ -67,9 +67,10 @@ app.get("/urls/new", (req, res) => {
   res.render("urls_new", templateVars);
 });
 
-// render to 'show view' or 'error view' with url & user Variables 🟢🟠
+// render show template with url & user Variables 🟣
+// edit button in index template lead here
 app.get("/urls/:shortURL", (req,res) => {
-  // if the shortURL is not in DB, render error view
+  // if shortURL is not in DB, render error template with user variable
   if (urlDatabase[req.params.shortURL]) {
     const templateVars = {
       shortURL: req.params.shortURL,
@@ -84,19 +85,19 @@ app.get("/urls/:shortURL", (req,res) => {
   }
 });
 
-// get longURL from client, generate shortURL and add them in urlDB 🟢
+// get longURL from form in new template, generate shortURL and add them in urlDB  then redirect 🟣
 app.post("/urls", (req, res) => {
   const shortURL = generateRandomString();
   urlDatabase[shortURL] = req.body.longURL;
   res.redirect(`/urls/${shortURL}`);
 });
 
-// link on the shortURL will redirect to it's longURL path 🟢
+// link on the shortURL will redirect to it's longURL path 🟣
 app.get("/u/:shortURL", (req,res) => {
   res.redirect(`${urlDatabase[req.params.shortURL]}`);
 });
 
-// 🚨
+// get email pass from form in regestration template, generate id, add to userDB then redirect 🟠
 app.post("/register", (req,res) => {
   const userID = generateRandomString();
   users[userID] = {
@@ -105,24 +106,19 @@ app.post("/register", (req,res) => {
     email: req.body.email,
   }
   res.cookie('user_id',userID);
-  console.log(users);
+  console.log(users); // 🚨
   res.redirect("/urls");
 });
 
-// delete button from index page - Delete row in urlDB and redirect to index page 🟢
+// delete button in index template - Delete row in urlDB then redirect 🟣
 app.post("/urls/:shortURL/delete", (req,res) => {
   delete urlDatabase[req.params.shortURL];
   res.redirect("/urls");
 });
 
-// edit button from index page will redirect to the show/edit page 🟢
-app.post("/urls/:shortURL", (req,res) => {
-  res.redirect(`/urls/${req.params.shortURL}`);
-});
-
-// edit longURL in urlDB & redirect to index page 🟢
-app.post("/urls/:shortURL/edit", (req,res) => {
-  urlDatabase[req.params.shortURL] = req.body.longURL;
+// edit button in show template - Edit longURL in urlDB & redirect 🟣
+app.post("/urls/:id", (req,res) => {
+  urlDatabase[req.params.id] = req.body.longURL;
   res.redirect("/urls");
 });
 
