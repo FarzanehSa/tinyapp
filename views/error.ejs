@@ -11,9 +11,9 @@
 
   
   <main style="margin: 1em;">
-    <h3>Error: Unable to find URL.</h3>
-    <h5>Please check that the URL entered is correct.</h5>
-    <img src="/images/pageNotFound.jpg" class="rounded mx-auto d-block" alt="Page Not Found" width="600" height="600">
+    <h3>Error: <%= error.h3 %></h3>
+    <h5><%= error.h5 %></h5>
+    <img src="/images/<%= error.image %>.jpg" class="rounded mx-auto d-block" alt="Page Not Found" width="600" height="600">
   </main>
   
   <!-- Bootstrap JS -->

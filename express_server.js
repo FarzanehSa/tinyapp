@@ -93,7 +93,7 @@ app.get("/urls/new", (req, res) => {
 // render show template with url & user Variables 🟣
 // edit button in index template lead here
 app.get("/urls/:shortURL", (req,res) => {
-  // if shortURL is not in DB, render error template with user variable
+  // if shortURL is not in DB, render error template with user and error variable
   if (urlDatabase[req.params.shortURL]) {
     const templateVars = {
       shortURL: req.params.shortURL,
@@ -107,7 +107,7 @@ app.get("/urls/:shortURL", (req,res) => {
       error: errors.e1
     };
     res.statusCode = errors.e1.code;
-    res.render("urls_error", templateVars);
+    res.render("error", templateVars);
   }
 });
 
