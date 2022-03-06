@@ -37,6 +37,29 @@ const users = {
 //   }
 };
 
+const errors = {
+  e1: {
+    code: 404,
+    h3: "Unable to find URL",
+    h5: "Please check that the URL entered is correct.",
+    image: "pageNotFound"
+  },
+  e2: {
+    code: 400,
+    h3: "Username and Password are required",
+    h5: "Please go back and fill out both fields.",
+    image: "error"
+  },
+  e3: {
+    code: 400,
+    h3: "Email is already registered",
+    h5: "Please login with your email or register new email.",
+    image: "error"
+  }
+};
+
+
+
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
@@ -79,8 +102,11 @@ app.get("/urls/:shortURL", (req,res) => {
     };
     res.render("urls_show", templateVars);
   } else {
-    const templateVars = {user: users[req.cookies.user_id]};
-    res.statusCode = 404;
+    const templateVars = {
+      user: users[req.cookies.user_id],
+      error: errors.e1
+    };
+    res.statusCode = errors.e1.code;
     res.render("urls_error", templateVars);
   }
 });
