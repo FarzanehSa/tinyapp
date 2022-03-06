@@ -12,11 +12,6 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieParser());
 app.use(express.static("public")); // dir public is root for images that we have.
 
-// generating random alphanumeric length 6 for shortURL & userID 🟣
-const generateRandomString = function() {
-  return Math.random().toString(36).slice(2,8);
-};
-
 // startpoint urlsDB 🟣
 const urlDatabase = {
   // "b2xVn2": "http://www.lighthouselabs.ca",
@@ -25,18 +20,18 @@ const urlDatabase = {
 
 // startpoint userDB 🟣
 const users = { 
-//   "userRandomID": {
-//     id: "userRandomID", 
-//     email: "user@example.com", 
-//     password: "purple-monkey-dinosaur"
-//   },
-//  "user2RandomID": {
-//     id: "user2RandomID", 
-//     email: "user2@example.com", 
-//     password: "dishwasher-funk"
-//   }
+  //   "userRandomID": {
+    //     id: "userRandomID", 
+    //     email: "user@example.com", 
+    //     password: "purple-monkey-dinosaur"
+    //   },
+    //  "user2RandomID": {
+      //     id: "user2RandomID", 
+      //     email: "user2@example.com", 
+      //     password: "dishwasher-funk"
+      //   }
 };
-
+    
 const errors = {
   e1: {
     code: 404,
@@ -58,7 +53,18 @@ const errors = {
   }
 };
 
+// generating random alphanumeric length 6 for shortURL & userID 🟣
+const generateRandomString = function() {
+  return Math.random().toString(36).slice(2,8);
+};
 
+// check eamil already exict in userDB or not 🟠
+const getUserByEmail = function(userDB, userEmail) {
+  for (const user in userDB) {
+    if (users[user].email === userEmail) return true;
+  }
+  return false;
+};
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
@@ -70,10 +76,9 @@ app.get("/urls", (req, res) => {
     user: users[req.cookies.user_id],
     urls: urlDatabase
   };
-  console.log(users)
   res.render("urls_index", templateVars);
 });
-
+    
 // render registration template 🟠 ❓ pass user
 app.get("/register", (req, res) => {
   const templateVars = {
@@ -123,17 +128,36 @@ app.get("/u/:shortURL", (req,res) => {
   res.redirect(`${urlDatabase[req.params.shortURL]}`);
 });
 
-// get email pass from form in regestration template, generate id, add to userDB then redirect 🟠
+// get email & password from form in regestration template 🟠
 app.post("/register", (req,res) => {
-  const userID = generateRandomString();
-  users[userID] = {
-    id: userID,
-    password: req.body.password,
-    email: req.body.email,
+  // If email/password are empty, send back response with 400 status code
+  if (req.body.email.length === 0 || req.body.password.length === 0) {
+    const templateVars = {
+      user: users[req.cookies.user_id],
+      error: errors.e2
+    };
+    res.statusCode = errors.e2.code;
+    res.render("error", templateVars);
+    // If email already registerd, send response back with 400 status code
+  } else if (getUserByEmail(users, req.body.email)) {
+    const templateVars = {
+      user: users[req.cookies.user_id],
+      error: errors.e3
+    };
+    res.statusCode = errors.e3.code;
+    res.render("error", templateVars);
+    // otherwise generate id, add to userDB then redirect
+  } else {
+    const userID = generateRandomString();
+    users[userID] = {
+      id: userID,
+      password: req.body.password,
+      email: req.body.email,
+    }
+    res.cookie('user_id',userID);
+    // console.log(users); // 🚨
+    res.redirect("/urls");
   }
-  res.cookie('user_id',userID);
-  console.log(users); // 🚨
-  res.redirect("/urls");
 });
 
 // delete button in index template - Delete row in urlDB then redirect 🟣
