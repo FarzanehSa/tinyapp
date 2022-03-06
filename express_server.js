@@ -87,6 +87,14 @@ app.get("/register", (req, res) => {
   res.render("registeration", templateVars);
 });
 
+// render login template 🟠 ❓ pass user
+app.get("/login", (req, res) => {
+  const templateVars = {
+    user: users[req.cookies.user_id]
+  };
+  res.render("login", templateVars);
+});
+
 // render new template with user Variable 🟣
 app.get("/urls/new", (req, res) => {
   const templateVars = {
