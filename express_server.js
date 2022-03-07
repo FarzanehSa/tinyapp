@@ -108,8 +108,11 @@ app.get("/login", (req, res) => {
   res.render("login", templateVars);
 });
 
-// render new template with user Variable 🟣
+// render new template with user Variable 🟠
 app.get("/urls/new", (req, res) => {
+  // if (!req.cookies.user_id) {
+  //   res.redirect('/login');
+  // }
   const templateVars = {
     user: users[req.cookies.user_id]
   };
@@ -162,7 +165,8 @@ app.post("/register", (req,res) => {
     res.statusCode = errors.e2.code;
     res.render("error", templateVars);
     // If email already registerd, send response back with 400 status code
-  } else if (getUserByEmail(users, newEmail)) {
+  }
+   if (getUserByEmail(users, newEmail)) {
     const templateVars = {
       user: undefined,
       error: errors.e3
@@ -170,16 +174,15 @@ app.post("/register", (req,res) => {
     res.statusCode = errors.e3.code;
     res.render("error", templateVars);
     // otherwise generate id, add to userDB then redirect
-  } else {
-    const userID = generateRandomString();
-    users[userID] = {
-      id: userID,
-      email: newEmail,
-      password: newPass,
-    };
-    res.cookie('user_id',userID);
-    res.redirect("/urls");
   }
+  const userID = generateRandomString();
+  users[userID] = {
+    id: userID,
+    email: newEmail,
+    password: newPass,
+  };
+  res.cookie('user_id',userID);
+  res.redirect("/urls");
 });
 
 // delete button in index template - Delete row in urlDB then redirect 🟣
@@ -206,30 +209,29 @@ app.post("/login", (req, res) => {
     };
     res.statusCode = errors.e2.code;
     res.render("error", templateVars);
+  }
   // if email is not exist, send back response with 403 status code
-  } else if (!getUserByEmail(users, curEmail)) {
+  if (!getUserByEmail(users, curEmail)) {
     const templateVars = {
       user: undefined,
       error: errors.e4
     };
     res.statusCode = errors.e4.code;
     res.render("error", templateVars);
-  } else {
-    const userID = getUserByEmail(users, curEmail);
-    // if password does not match, send back response with 403 status code
-    if (users[userID].password !== curPass) {
-      const templateVars = {
-        user: undefined,
-        error: errors.e5
-      };
-      res.statusCode = errors.e5.code;
-      res.render("error", templateVars);
-    } else {
-      // set cookie and redirect
-      res.cookie('user_id', userID);
-      res.redirect("/urls");
-    }
+  } 
+  const userID = getUserByEmail(users, curEmail);
+  // if password does not match, send back response with 403 status code
+  if (users[userID].password !== curPass) {
+    const templateVars = {
+      user: undefined,
+      error: errors.e5
+    };
+    res.statusCode = errors.e5.code;
+    res.render("error", templateVars);
   }
+  // set cookie and redirect
+  res.cookie('user_id', userID);
+  res.redirect("/urls");
 });
 
 // clear cookie 🟣
