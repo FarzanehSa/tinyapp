@@ -94,18 +94,28 @@ app.get("/urls", (req, res) => {
     
 // render registration template 🟣
 app.get("/register", (req, res) => {
-  const templateVars = {
-    user: undefined
-  };
-  res.render("registeration", templateVars);
+  // if user logged in before just redirect to /urls
+  if (req.cookies.user_id) {
+    res.redirect("/urls");
+  } else {
+    const templateVars = {
+      user: undefined
+    };
+    res.render("registeration", templateVars);
+  }
 });
 
 // render login template 🟣
 app.get("/login", (req, res) => {
-  const templateVars = {
-    user: undefined
-  };
-  res.render("login", templateVars);
+  // if user logged in before just redirect to /urls
+  if (req.cookies.user_id) {
+    res.redirect("/urls");
+  } else {
+    const templateVars = {
+      user: undefined
+    };
+    res.render("login", templateVars);
+  }
 });
 
 // render new template with user Variable 🟠
@@ -159,30 +169,30 @@ app.post("/register", (req,res) => {
   // If email/password are empty, send back response with 400 status code
   if (!newEmail || !newPass) {
     const templateVars = {
-      user: users[req.cookies.user_id],
+      user: undefined,
       error: errors.e2
     };
     res.statusCode = errors.e2.code;
     res.render("error", templateVars);
     // If email already registerd, send response back with 400 status code
   } else if (getUserByEmail(users, newEmail)) {
-      const templateVars = {
-        user: undefined,
-        error: errors.e3
-      };
-      res.statusCode = errors.e3.code;
-      res.render("error", templateVars);
-    // otherwise generate id, add to userDB then redirect
-    } else {
-        const userID = generateRandomString();
-        users[userID] = {
-          id: userID,
-          email: newEmail,
-          password: newPass,
-        };
-      res.cookie('user_id',userID);
-      res.redirect("/urls");
-      }
+    const templateVars = {
+      user: undefined,
+      error: errors.e3
+    };
+    res.statusCode = errors.e3.code;
+    res.render("error", templateVars);
+  // otherwise generate id, add to userDB then redirect
+  } else {
+    const userID = generateRandomString();
+    users[userID] = {
+      id: userID,
+      email: newEmail,
+      password: newPass,
+    };
+    res.cookie('user_id',userID);
+    res.redirect("/urls");
+  }
 });
 
 // delete button in index template - Delete row in urlDB then redirect 🟣
@@ -218,22 +228,22 @@ app.post("/login", (req, res) => {
     res.statusCode = errors.e4.code;
     res.render("error", templateVars);
   } else {
-      const user = getUserByEmail(users, curEmail);
-      // if password does not match, send back response with 403 status code
-      if (user.password !== curPass) {
-        const templateVars = {
-          user: undefined,
-          error: errors.e5
-        };
-        res.statusCode = errors.e5.code;
-        res.render("error", templateVars);
-      } else {
-        // set cookie and redirect
-        res.cookie('user_id', user.id);
-        res.redirect("/urls");
-      }
+    const user = getUserByEmail(users, curEmail);
+    // if password does not match, send back response with 403 status code
+    if (user.password !== curPass) {
+      const templateVars = {
+        user: undefined,
+        error: errors.e5
+      };
+      res.statusCode = errors.e5.code;
+      res.render("error", templateVars);
+    } else {
+      // set cookie and redirect
+      res.cookie('user_id', user.id);
+      res.redirect("/urls");
     }
-  });
+  }
+});
   
 // clear cookie 🟣
 app.post("/logout", (req, res) => {
