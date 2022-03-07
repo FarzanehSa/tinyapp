@@ -74,7 +74,7 @@ const generateRandomString = function() {
 // check if eamil already exist in userDB, return userID or false 🟣
 const getUserByEmail = function(userDB, userEmail) {
   for (const user in userDB) {
-    if (users[user].email === userEmail) return users[user].id;
+    if (users[user].email === userEmail) return users[user];
   }
   return false;
 };
@@ -157,32 +157,32 @@ app.post("/register", (req,res) => {
   const newEmail = req.body.email;
   const newPass = req.body.password;
   // If email/password are empty, send back response with 400 status code
-  if (newEmail.length === 0 || newPass.length === 0) {
+  if (!newEmail || !newPass) {
     const templateVars = {
-      user: undefined,
+      user: users[req.cookies.user_id],
       error: errors.e2
     };
     res.statusCode = errors.e2.code;
     res.render("error", templateVars);
     // If email already registerd, send response back with 400 status code
-  }
-   if (getUserByEmail(users, newEmail)) {
-    const templateVars = {
-      user: undefined,
-      error: errors.e3
-    };
-    res.statusCode = errors.e3.code;
-    res.render("error", templateVars);
+  } else if (getUserByEmail(users, newEmail)) {
+      const templateVars = {
+        user: undefined,
+        error: errors.e3
+      };
+      res.statusCode = errors.e3.code;
+      res.render("error", templateVars);
     // otherwise generate id, add to userDB then redirect
-  }
-  const userID = generateRandomString();
-  users[userID] = {
-    id: userID,
-    email: newEmail,
-    password: newPass,
-  };
-  res.cookie('user_id',userID);
-  res.redirect("/urls");
+    } else {
+        const userID = generateRandomString();
+        users[userID] = {
+          id: userID,
+          email: newEmail,
+          password: newPass,
+        };
+      res.cookie('user_id',userID);
+      res.redirect("/urls");
+      }
 });
 
 // delete button in index template - Delete row in urlDB then redirect 🟣
@@ -202,38 +202,39 @@ app.post("/login", (req, res) => {
   const curEmail = req.body.email;
   const curPass = req.body.password;
   // If email/password are empty, send back response with 400 status code
-  if (curEmail.length === 0 || curPass.length === 0) {
+  if (!curEmail || !curPass) {
     const templateVars = {
       user: undefined,
       error: errors.e2
     };
     res.statusCode = errors.e2.code;
     res.render("error", templateVars);
-  }
   // if email is not exist, send back response with 403 status code
-  if (!getUserByEmail(users, curEmail)) {
+  } else if (!getUserByEmail(users, curEmail)) {
     const templateVars = {
       user: undefined,
       error: errors.e4
     };
     res.statusCode = errors.e4.code;
     res.render("error", templateVars);
-  } 
-  const userID = getUserByEmail(users, curEmail);
-  // if password does not match, send back response with 403 status code
-  if (users[userID].password !== curPass) {
-    const templateVars = {
-      user: undefined,
-      error: errors.e5
-    };
-    res.statusCode = errors.e5.code;
-    res.render("error", templateVars);
-  }
-  // set cookie and redirect
-  res.cookie('user_id', userID);
-  res.redirect("/urls");
-});
-
+  } else {
+      const user = getUserByEmail(users, curEmail);
+      // if password does not match, send back response with 403 status code
+      if (user.password !== curPass) {
+        const templateVars = {
+          user: undefined,
+          error: errors.e5
+        };
+        res.statusCode = errors.e5.code;
+        res.render("error", templateVars);
+      } else {
+        // set cookie and redirect
+        res.cookie('user_id', user.id);
+        res.redirect("/urls");
+      }
+    }
+  });
+  
 // clear cookie 🟣
 app.post("/logout", (req, res) => {
   res.clearCookie('user_id');
