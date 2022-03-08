@@ -14,28 +14,28 @@ app.use(express.static("public")); // dir public is root for images that we have
 
 // startpoint urlsDB 🟣
 const urlDatabase = {
-  b6UTxQ: {
+  abc123: {
     longURL: "https://www.tsn.ca",
-    userID: "aJ48lW"
+    userID: "123456"
   },
-  i3BoGr: {
+  efg456: {
     longURL: "https://www.google.ca",
-    userID: "aJ48lW"
+    userID: "123456"
   }
 };
 
 // startpoint userDB 🟣
 const users = {
-  //  "userRandomID": {
-  //    id: "userRandomID",
-  //    email: "user@example.com",
-  //    password: "purple-monkey-dinosaur"
-  //  },
-  //  "user2RandomID": {
-  //    id: "user2RandomID",
-  //    email: "user2@example.com",
-  //    password: "dishwasher-funk"
-  //  }
+   "123456": {
+     id: "123456",
+     email: "1@g.com",
+     password: "1"
+   },
+   "abcdef": {
+     id: "abcdef",
+     email: "2@g.com",
+     password: "2"
+   }
 };
 
 // error Database 🟠
@@ -44,7 +44,7 @@ const errors = {
     code: 404,
     h3: "Unable to find URL",
     h5: "Please check that the URL entered is correct.",
-    image: "pageNotFound"
+    image: "urlNotFound"
   },
   e2: {
     code: 400,
@@ -81,6 +81,12 @@ const errors = {
     h3: "Please Login or Register first!",
     h5: "",
     image: "initial"
+  },
+  e9: {
+    code: 404,
+    h3: "Page Not Found",
+    h5: "",
+    image: "pageNotExist"
   },
 };
 
@@ -119,7 +125,8 @@ app.get("/urls", (req, res) => {
   if (curUser) {
     const templateVars = {
       user: curUser,
-      urls: urlsForUser(urlDatabase, curUser.id)
+      urls: urlDatabase,
+      // urls: urlsForUser(urlDatabase, curUser.id)
     };
     res.render("urls_index", templateVars);
     console.log("users  ",users);          // 🚨🚨🚨
@@ -179,7 +186,7 @@ app.get("/urls/new", (req, res) => {
 // If user is not logged in, shows message
 // if asked shortURL is not for curUser shows error
 app.get("/urls/:shortURL", (req,res) => {
-  const curUser = users[req.cookies.user_id]
+  const curUser = users[req.cookies.user_id];
   if (curUser) {
     if (urlDatabase[req.params.shortURL]) {
       if (urlDatabase[req.params.shortURL].userID === curUser.id) {
@@ -219,7 +226,17 @@ app.get("/urls/:shortURL", (req,res) => {
 
 // link on the shortURL will redirect to it's longURL path 🔵
 app.get("/u/:shortURL", (req,res) => {
-  res.redirect(`${urlDatabase[req.params.shortURL].longURL}`);
+  if (urlDatabase[req.params.shortURL]) {
+
+    res.redirect(`${urlDatabase[req.params.shortURL].longURL}`);
+  } else {
+    const templateVars = {
+      user: users[req.cookies.user_id],
+      error: errors.e1
+    };
+    res.statusCode = errors.e1.code;
+    res.render("error", templateVars);
+  }
 });
 
 // get longURL from form in new template, generate shortURL and add them in urlDB  then redirect 🔵
@@ -274,16 +291,38 @@ app.post("/register", (req,res) => {
   }
 });
 
-// delete button in index template - Delete row in urlDB then redirect 🟣
+// delete button in index template - Delete row in urlDB then redirect 🟡
 app.post("/urls/:shortURL/delete", (req,res) => {
-  delete urlDatabase[req.params.shortURL];
-  res.redirect("/urls");
+  const curUser = users[req.cookies.user_id];
+  // login required
+  if (!curUser) {
+    res.send("Access Denied, Login First!\n");
+    res.statusCode = 405;
+  // prevent to delete otherone's url, from cURL command in terminal
+  } else if (urlDatabase[req.params.shortURL].userID === curUser.id) {
+    delete urlDatabase[req.params.shortURL];
+    res.redirect("/urls");
+  } else {
+    res.send("Access Denied, This URL doesn't belong to you!\n");
+    res.statusCode = 405;
+  }
 });
 
 // edit button in show template - Edit longURL in urlDB & redirect 🔵
 app.post("/urls/:id", (req,res) => {
-  urlDatabase[req.params.id].longURL = req.body.longURL;
-  res.redirect("/urls");
+  const curUser = users[req.cookies.user_id];
+  // login required
+  if (!curUser) {
+    res.send("Access Denied, Login First!\n");
+    res.statusCode = 405;
+  // prevent to Edit otherone's url, from cURL command in terminal
+  } else if (urlDatabase[req.params.id].userID === curUser.id) {
+    urlDatabase[req.params.id].longURL = req.body.longURL;
+    res.redirect("/urls");
+  } else {
+    res.send("Access Denied, This URL doesn't belong to you!\n");
+    res.statusCode = 405;
+  }
 });
 
 // login check 3 false situation, blank input or email not exist or password not match otherwise set cookie. 🟣
@@ -329,3 +368,17 @@ app.post("/logout", (req, res) => {
   res.clearCookie('user_id');
   res.redirect("/urls");
 });
+
+// this matches all routes and all methods- centralized error handler
+app.use((req, res) => {
+  // res.status(404).send({
+  // status: 404,
+  // error: 'Not found'
+  // })
+  const templateVars = {
+    user: users[req.cookies.user_id],
+    error: errors.e9
+  };
+  res.statusCode = errors.e9.code;
+  res.status(404).render("error", templateVars);
+ })
