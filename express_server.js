@@ -3,6 +3,7 @@ const morgan = require("morgan");
 const bodyParser = require("body-parser");
 const cookieSession = require("cookie-session");
 const bcrypt = require("bcryptjs");
+const { getUserByEmail } = require("./helpers")
 
 const app = express();
 const PORT = 8080; // default port 8080
@@ -97,14 +98,6 @@ const errors = {
 // generating random alphanumeric length 6 for shortURL & userID ⚪️
 const generateRandomString = function() {
   return Math.random().toString(36).slice(2,8);
-};
-
-// check if eamil already exist in userDB, return userID or false ⚪️
-const getUserByEmail = function(userDB, userEmail) {
-  for (const user in userDB) {
-    if (users[user].email === userEmail) return users[user];
-  }
-  return false;
 };
 
 // takes urlDB & id, returns DB of URLs where userID equals id ⚪️
