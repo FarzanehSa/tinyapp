@@ -1,7 +1,8 @@
 const express = require("express");
 const morgan = require("morgan");
 const bodyParser = require("body-parser");
-const cookieParser = require("cookie-parser");
+// const cookieParser = require("cookie-parser");
+const cookieSession = require("cookie-session");
 const bcrypt = require("bcryptjs");
 
 const app = express();
@@ -10,7 +11,11 @@ const PORT = 8080; // default port 8080
 app.set("view engine", "ejs");
 app.use(morgan("dev"));
 app.use(bodyParser.urlencoded({extended: true}));
-app.use(cookieParser());
+// app.use(cookieParser());
+app.use(cookieSession({
+  name: 'session',
+  keys: ['key1', 'key2']
+}));
 app.use(express.static("public")); // dir public is root for images that we have.
 
 // startpoint urlsDB 🟢
@@ -122,20 +127,20 @@ app.listen(PORT, () => {
 // render index template with DB of user's URLs & user Variables 🟢
 // If user is not logged in, shows message
 app.get("/urls", (req, res) => {
-  const curUser = users[req.cookies.user_id];
+  const curUser = users[req.session.user_id];
   if (curUser) {
     const templateVars = {
       user: curUser,
       urls: urlsForUser(urlDatabase, curUser.id)
     };
     res.render("urls_index", templateVars);
-    console.log("🔘 cookie  ",req.cookies);  // 🚨🚨🚨
+    console.log("🔘 cookie  ",req.session);  // 🚨🚨🚨
     console.log("-----------------------");  // 🚨🚨🚨
     console.log("🔘 users  ",users);         // 🚨🚨🚨
     console.log("-----------------------");  // 🚨🚨🚨
     console.log("🔘 urlDB  ",urlDatabase);   // 🚨🚨🚨
     console.log("-----------------------");  // 🚨🚨🚨
-    console.log("🔶 Filtered DB  ",urlsForUser(urlDatabase, users[req.cookies.user_id].id));  // 🚨🚨🚨
+    console.log("🔶 Filtered DB  ",urlsForUser(urlDatabase, users[req.session.user_id].id));  // 🚨🚨🚨
     console.log("-----------------------");  // 🚨🚨🚨
   } else {
     const templateVars = {
@@ -149,7 +154,7 @@ app.get("/urls", (req, res) => {
 // render registration template 🟢
 app.get("/register", (req, res) => {
   // if user logged in before just redirect to /urls
-  if (users[req.cookies.user_id]) {
+  if (users[req.session.user_id]) {
     res.redirect("/urls");
   } else {
     const templateVars = {
@@ -162,7 +167,7 @@ app.get("/register", (req, res) => {
 // render login template 🟢
 app.get("/login", (req, res) => {
   // if user logged in before just redirect to /urls
-  if (users[req.cookies.user_id]) {
+  if (users[req.session.user_id]) {
     res.redirect("/urls");
   } else {
     const templateVars = {
@@ -175,11 +180,11 @@ app.get("/login", (req, res) => {
 // render new template with user Variable 🟢
 app.get("/urls/new", (req, res) => {
   // If someone is not logged in, can not go to url/new and will redirect to /login
-  if (!users[req.cookies.user_id]) {
+  if (!users[req.session.user_id]) {
     res.redirect('/login');
   } else {
     const templateVars = {
-      user: users[req.cookies.user_id]
+      user: users[req.session.user_id]
     };
     res.render("urls_new", templateVars);
   }
@@ -190,7 +195,7 @@ app.get("/urls/new", (req, res) => {
 // If user is not logged in, shows message
 // if asked shortURL is not for curUser shows error
 app.get("/urls/:shortURL", (req,res) => {
-  const curUser = users[req.cookies.user_id];
+  const curUser = users[req.session.user_id];
   if (curUser) {
     if (urlDatabase[req.params.shortURL]) {
       // check url belongs to current user
@@ -235,7 +240,7 @@ app.get("/u/:shortURL", (req,res) => {
     res.redirect(`${urlDatabase[req.params.shortURL].longURL}`);
   } else {
     const templateVars = {
-      user: users[req.cookies.user_id],
+      user: users[req.session.user_id],
       error: errors.e1
     };
     res.statusCode = errors.e1.code;
@@ -247,7 +252,7 @@ app.get("/u/:shortURL", (req,res) => {
 app.post("/urls", (req, res) => {
   // shows error if someone without login try to creat new shortURL
   // it only can happen via terminal so error designed for terminal
-  const curUser = users[req.cookies.user_id];
+  const curUser = users[req.session.user_id];
   if (!curUser) {
     res.send("Access Denied, Login First!\n");
     res.statusCode = 405;
@@ -290,14 +295,14 @@ app.post("/register", (req,res) => {
       email: newEmail,
       password: newPass,
     };
-    res.cookie('user_id',userID);
+    req.session.user_id = userID;
     res.redirect("/urls");
   }
 });
 
 // delete button in index template - Delete row in urlDB then redirect 🟢
 app.post("/urls/:shortURL/delete", (req,res) => {
-  const curUser = users[req.cookies.user_id];
+  const curUser = users[req.session.user_id];
   // login required
   if (!curUser) {
     res.send("Access Denied, Login First!\n");
@@ -314,7 +319,7 @@ app.post("/urls/:shortURL/delete", (req,res) => {
 
 // edit button in show template - Edit longURL in urlDB & redirect 🟢
 app.post("/urls/:id", (req,res) => {
-  const curUser = users[req.cookies.user_id];
+  const curUser = users[req.session.user_id];
   // login required
   if (!curUser) {
     res.send("Access Denied, Login First!\n");
@@ -361,7 +366,7 @@ app.post("/login", (req, res) => {
       res.render("error", templateVars);
     } else {
       // set cookie and redirect
-      res.cookie('user_id', user.id);
+      req.session.user_id = user.id;
       res.redirect("/urls");
     }
   }
@@ -369,14 +374,14 @@ app.post("/login", (req, res) => {
   
 // clear cookie 🟢
 app.post("/logout", (req, res) => {
-  res.clearCookie('user_id');
+  req.session = null;
   res.redirect("/urls");
 });
 
 // this matches all routes and all methods- centralized error handler 🟢
 app.use((req, res) => {
   const templateVars = {
-    user: users[req.cookies.user_id],
+    user: users[req.session.user_id],
     error: errors.e9
   };
   res.statusCode = errors.e9.code;
