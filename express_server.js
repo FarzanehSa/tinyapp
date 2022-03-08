@@ -48,7 +48,7 @@ const errors = {
   },
   e2: {
     code: 400,
-    h3: "Username and Password are required",
+    h3: "Email and Password are required",
     h5: "Please go back and fill out both fields.",
     image: "error"
   },
