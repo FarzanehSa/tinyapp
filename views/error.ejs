@@ -11,9 +11,14 @@
 
   
   <main style="margin: 1em;">
-    <h3>Error <%= error.code %>: <%= error.h3 %></h3>
+    <% if (error.code) { %>
+      <h3>Error <%= error.code %>: <%= error.h3 %></h3>
+    <% } else { %>
+      <h2><%= error.h3 %></h2>
+    <% } %>   
     <h5><%= error.h5 %></h5>
-    <img src="/images/<%= error.image %>.jpg" class="rounded mx-auto d-block" alt="Page Not Found" width="600" height="600">
+    <img src="/images/<%= error.image %>.jpg" class="rounded mx-auto d-block" alt="Page Not Found">
+  <!-- width="600" height="600" -->
   </main>
   
   <!-- Bootstrap JS -->
