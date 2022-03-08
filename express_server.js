@@ -95,7 +95,7 @@ app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
 
-// render index template with DB & user Variables 🟠🟠
+// render index template with DB & user Variables 🔵
 app.get("/urls", (req, res) => {
   const templateVars = {
     user: users[req.cookies.user_id],
@@ -104,6 +104,7 @@ app.get("/urls", (req, res) => {
   res.render("urls_index", templateVars);
   console.log("users  ",users);          // 🚨🚨🚨
   console.log("cookies  ",req.cookies);  // 🚨🚨🚨
+  console.log("urlDB  ",urlDatabase);  // 🚨🚨🚨
   // console.log("users",)
 });
     
@@ -167,9 +168,9 @@ app.get("/urls/:shortURL", (req,res) => {
   }
 });
 
-// link on the shortURL will redirect to it's longURL path 🟣
+// link on the shortURL will redirect to it's longURL path 🔵
 app.get("/u/:shortURL", (req,res) => {
-  res.redirect(`${urlDatabase[req.params.shortURL]}`);
+  res.redirect(`${urlDatabase[req.params.shortURL].longURL}`);
 });
 
 // get longURL from form in new template, generate shortURL and add them in urlDB  then redirect 🔵
@@ -186,7 +187,7 @@ app.post("/urls", (req, res) => {
       longURL: req.body.longURL,
       userID: curUser.id
     };
-    console.log(urlDatabase);      // 🚨🚨🚨
+    console.log("new   ",urlDatabase[shortURL]);      // 🚨🚨🚨
     res.redirect(`/urls/${shortURL}`);
   }
 });
@@ -230,9 +231,9 @@ app.post("/urls/:shortURL/delete", (req,res) => {
   res.redirect("/urls");
 });
 
-// edit button in show template - Edit longURL in urlDB & redirect 🟣
+// edit button in show template - Edit longURL in urlDB & redirect 🔵
 app.post("/urls/:id", (req,res) => {
-  urlDatabase[req.params.id] = req.body.longURL;
+  urlDatabase[req.params.id].longURL = req.body.longURL;
   res.redirect("/urls");
 });
 
