@@ -70,12 +70,18 @@ const errors = {
     h5: "Try again!",
     image: "error"
   },
-  // e6: {
-  //   code: 405,
-  //   h3: "Access Denied",
-  //   h5: "Please login first",
-  //   image: "accessDenied"
-  // },
+  e6: {
+    code: 405,
+    h3: "Access Denied",
+    h5: "This URL doesn't belong to you!",
+    image: "accessDenied"
+  },
+  e7: {
+    code: "",
+    h3: "Please Login or Register first!",
+    h5: "",
+    image: "initial"
+  },
 };
 
 // generating random alphanumeric length 6 for shortURL & userID 🟣
@@ -91,21 +97,42 @@ const getUserByEmail = function(userDB, userEmail) {
   return false;
 };
 
+// takes urlDB & id, returns DB of URLs where userID equals id 🟡
+const urlsForUser = function(urlDB, id) {
+  const urlsFiltered = {};
+  for (const url in urlDB) {
+    if (urlDB[url].userID === id) {
+      urlsFiltered[url] = urlDB[url];
+    }
+  }
+  return urlsFiltered;
+};
+
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
 
-// render index template with DB & user Variables 🔵
+// render index template with DB of user's URLs & user Variables 🟡
+// If user is not logged in, shows message
 app.get("/urls", (req, res) => {
-  const templateVars = {
-    user: users[req.cookies.user_id],
-    urls: urlDatabase
-  };
-  res.render("urls_index", templateVars);
-  console.log("users  ",users);          // 🚨🚨🚨
-  console.log("cookies  ",req.cookies);  // 🚨🚨🚨
-  console.log("urlDB  ",urlDatabase);  // 🚨🚨🚨
-  // console.log("users",)
+  const curUser = users[req.cookies.user_id];
+  if (curUser) {
+    const templateVars = {
+      user: curUser,
+      urls: urlsForUser(urlDatabase, curUser.id)
+    };
+    res.render("urls_index", templateVars);
+    console.log("users  ",users);          // 🚨🚨🚨
+    console.log("cookies  ",req.cookies);  // 🚨🚨🚨
+    console.log("urlDB  ",urlDatabase);  // 🚨🚨🚨
+    console.log("🔶🔶🔶  ",urlsForUser(urlDatabase, users[req.cookies.user_id].id));  // 🚨🚨🚨
+  } else {
+    const templateVars = {
+      user: undefined,
+      error: errors.e7
+    };
+    res.render("error", templateVars);
+  }
 });
     
 // render registration template 🟣
@@ -147,23 +174,45 @@ app.get("/urls/new", (req, res) => {
   }
 });
 
-// render show template with url & user Variables 🔵
+// render show template with url & user Variables 🟡
 // edit button in index template lead here
+// If user is not logged in, shows message
+// if asked shortURL is not for curUser shows error
 app.get("/urls/:shortURL", (req,res) => {
-  // if shortURL is not in DB, render error template with user and error variable
-  if (urlDatabase[req.params.shortURL]) {
-    const templateVars = {
-      shortURL: req.params.shortURL,
-      longURL: urlDatabase[req.params.shortURL].longURL,
-      user: users[req.cookies.user_id]
-    };
-    res.render("urls_show", templateVars);
+  const curUser = users[req.cookies.user_id]
+  if (curUser) {
+    if (urlDatabase[req.params.shortURL]) {
+      if (urlDatabase[req.params.shortURL].userID === curUser.id) {
+        const templateVars = {
+          shortURL: req.params.shortURL,
+          longURL: urlDatabase[req.params.shortURL].longURL,
+          user: curUser
+        };
+        res.render("urls_show", templateVars);
+      // not same user, shows error
+      } else {
+        const templateVars = {
+          user: curUser,
+          error: errors.e6
+        };
+        res.statusCode = errors.e6.code;
+        res.render("error", templateVars);
+      }
+    // if shortURL is not in DB, render error template with user and error variable
+    } else {
+      const templateVars = {
+        user: curUser,
+        error: errors.e1
+      };
+      res.statusCode = errors.e1.code;
+      res.render("error", templateVars);
+    }
+  // not logged in befor
   } else {
     const templateVars = {
-      user: users[req.cookies.user_id],
-      error: errors.e1
+      user: undefined,
+      error: errors.e7
     };
-    res.statusCode = errors.e1.code;
     res.render("error", templateVars);
   }
 });
