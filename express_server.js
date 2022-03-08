@@ -259,7 +259,7 @@ app.post("/register", (req,res) => {
     return res.status(400).render("error", templateVars);
   } 
   // If email already registerd, send response back with 400 status code
-  if (getUserByEmail(users, newEmail)) {
+  if (getUserByEmail(newEmail, users)) {
     const templateVars = {
       user: undefined,
       error: errors.e3
@@ -320,14 +320,14 @@ app.post("/login", (req, res) => {
     return res.status(400).render("error", templateVars);
   }
   // if email is not exist, send back response with 403 status code
-  if (!getUserByEmail(users, curEmail)) {
+  if (!getUserByEmail(curEmail, users)) {
     const templateVars = {
       user: undefined,
       error: errors.e4
     };
     return res.status(403).render("error", templateVars);
   } 
-  const user = getUserByEmail(users, curEmail);
+  const user = getUserByEmail(curEmail, users);
   // if password does not match, send back response with 403 status code
   if (!bcrypt.compareSync(curPass, user.password)) {
     const templateVars = {
