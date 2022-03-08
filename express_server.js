@@ -14,8 +14,14 @@ app.use(express.static("public")); // dir public is root for images that we have
 
 // startpoint urlsDB 🟣
 const urlDatabase = {
-  // "b2xVn2": "http://www.lighthouselabs.ca",
-  // "9sm5xK": "http://www.google.com"
+  b6UTxQ: {
+    longURL: "https://www.tsn.ca",
+    userID: "aJ48lW"
+  },
+  i3BoGr: {
+    longURL: "https://www.google.ca",
+    userID: "aJ48lW"
+  }
 };
 
 // startpoint userDB 🟣
@@ -32,7 +38,7 @@ const users = {
   //  }
 };
 
-// error Database 🟣
+// error Database 🟠
 const errors = {
   e1: {
     code: 404,
@@ -64,6 +70,12 @@ const errors = {
     h5: "Try again!",
     image: "error"
   },
+  // e6: {
+  //   code: 405,
+  //   h3: "Access Denied",
+  //   h5: "Please login first",
+  //   image: "accessDenied"
+  // },
 };
 
 // generating random alphanumeric length 6 for shortURL & userID 🟣
@@ -83,19 +95,22 @@ app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
 
-// render index template with DB & user Variables 🟣
+// render index template with DB & user Variables 🟠🟠
 app.get("/urls", (req, res) => {
   const templateVars = {
     user: users[req.cookies.user_id],
     urls: urlDatabase
   };
   res.render("urls_index", templateVars);
+  console.log("users  ",users);          // 🚨🚨🚨
+  console.log("cookies  ",req.cookies);  // 🚨🚨🚨
+  // console.log("users",)
 });
     
 // render registration template 🟣
 app.get("/register", (req, res) => {
   // if user logged in before just redirect to /urls
-  if (req.cookies.user_id) {
+  if (users[req.cookies.user_id]) {
     res.redirect("/urls");
   } else {
     const templateVars = {
@@ -108,7 +123,7 @@ app.get("/register", (req, res) => {
 // render login template 🟣
 app.get("/login", (req, res) => {
   // if user logged in before just redirect to /urls
-  if (req.cookies.user_id) {
+  if (users[req.cookies.user_id]) {
     res.redirect("/urls");
   } else {
     const templateVars = {
@@ -118,25 +133,27 @@ app.get("/login", (req, res) => {
   }
 });
 
-// render new template with user Variable 🟠
+// render new template with user Variable 🔵
 app.get("/urls/new", (req, res) => {
-  // if (!req.cookies.user_id) {
-  //   res.redirect('/login');
-  // }
-  const templateVars = {
-    user: users[req.cookies.user_id]
-  };
-  res.render("urls_new", templateVars);
+  // If someone is not logged in, can not go to url/new and will redirect to /login
+  if (!users[req.cookies.user_id]) {
+    res.redirect('/login');
+  } else {
+    const templateVars = {
+      user: users[req.cookies.user_id]
+    };
+    res.render("urls_new", templateVars);
+  }
 });
 
-// render show template with url & user Variables 🟣
+// render show template with url & user Variables 🔵
 // edit button in index template lead here
 app.get("/urls/:shortURL", (req,res) => {
   // if shortURL is not in DB, render error template with user and error variable
   if (urlDatabase[req.params.shortURL]) {
     const templateVars = {
       shortURL: req.params.shortURL,
-      longURL: urlDatabase[req.params.shortURL],
+      longURL: urlDatabase[req.params.shortURL].longURL,
       user: users[req.cookies.user_id]
     };
     res.render("urls_show", templateVars);
@@ -155,11 +172,23 @@ app.get("/u/:shortURL", (req,res) => {
   res.redirect(`${urlDatabase[req.params.shortURL]}`);
 });
 
-// get longURL from form in new template, generate shortURL and add them in urlDB  then redirect 🟣
+// get longURL from form in new template, generate shortURL and add them in urlDB  then redirect 🔵
 app.post("/urls", (req, res) => {
-  const shortURL = generateRandomString();
-  urlDatabase[shortURL] = req.body.longURL;
-  res.redirect(`/urls/${shortURL}`);
+  // shows error if someone without login try to creat new shortURL
+  // it only can happen via terminal so error designed for terminal
+  const curUser = users[req.cookies.user_id];
+  if (!curUser) {
+    res.send("Access Denied, Login First!\n");
+    res.statusCode = 405;
+  } else {
+    const shortURL = generateRandomString();
+    urlDatabase[shortURL] = {
+      longURL: req.body.longURL,
+      userID: curUser.id
+    };
+    console.log(urlDatabase);      // 🚨🚨🚨
+    res.redirect(`/urls/${shortURL}`);
+  }
 });
 
 // get email & password from form in regestration template 🟣
