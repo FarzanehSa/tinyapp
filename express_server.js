@@ -2,6 +2,7 @@ const express = require("express");
 const morgan = require("morgan");
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
+const bcrypt = require("bcryptjs");
 
 const app = express();
 const PORT = 8080; // default port 8080
@@ -29,12 +30,12 @@ const users = {
   "123456": {
     id: "123456",
     email: "1@g.com",
-    password: "1"
+    password: '$2a$10$W8FvFYIGVqZ7seHc0upQ0ODgTAuZhQGzvhOKjMLdxDMv.LWVpS0ea'
   },
   "abcdef": {
     id: "abcdef",
     email: "2@g.com",
-    password: "2"
+    password: '$2a$10$B2ov0fKHaEzgyit4AhT6IepvK7BzseRz8A8zR/./.TCWthjv5MyfC'
   }
 };
 
@@ -261,10 +262,10 @@ app.post("/urls", (req, res) => {
   }
 });
 
-// get email & password from form in regestration template 🟢
+// get email & password from form in regestration template 🟠
 app.post("/register", (req,res) => {
   const newEmail = req.body.email;
-  const newPass = req.body.password;
+  const newPass = bcrypt.hashSync(req.body.password, 10);
   // If email/password are empty, send back response with 400 status code
   if (!newEmail || !newPass) {
     const templateVars = {
@@ -328,7 +329,7 @@ app.post("/urls/:id", (req,res) => {
   }
 });
 
-// login check 3 false situation, blank input or email not exist or password not match otherwise set cookie. 🟢
+// login check 3 false situation, blank input or email not exist or password not match otherwise set cookie. 🟠
 app.post("/login", (req, res) => {
   const curEmail = req.body.email;
   const curPass = req.body.password;
@@ -351,7 +352,7 @@ app.post("/login", (req, res) => {
   } else {
     const user = getUserByEmail(users, curEmail);
     // if password does not match, send back response with 403 status code
-    if (user.password !== curPass) {
+    if (!bcrypt.compareSync(curPass, user.password)) {
       const templateVars = {
         user: undefined,
         error: errors.e5
