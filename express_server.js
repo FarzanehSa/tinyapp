@@ -12,7 +12,7 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieParser());
 app.use(express.static("public")); // dir public is root for images that we have.
 
-// startpoint urlsDB 🟣
+// startpoint urlsDB 🟢
 const urlDatabase = {
   abc123: {
     longURL: "https://www.tsn.ca",
@@ -24,21 +24,21 @@ const urlDatabase = {
   }
 };
 
-// startpoint userDB 🟣
+// startpoint userDB 🟢
 const users = {
-   "123456": {
-     id: "123456",
-     email: "1@g.com",
-     password: "1"
-   },
-   "abcdef": {
-     id: "abcdef",
-     email: "2@g.com",
-     password: "2"
-   }
+  "123456": {
+    id: "123456",
+    email: "1@g.com",
+    password: "1"
+  },
+  "abcdef": {
+    id: "abcdef",
+    email: "2@g.com",
+    password: "2"
+  }
 };
 
-// error Database 🟠
+// error Database 🟢
 const errors = {
   e1: {
     code: 404,
@@ -90,12 +90,12 @@ const errors = {
   },
 };
 
-// generating random alphanumeric length 6 for shortURL & userID 🟣
+// generating random alphanumeric length 6 for shortURL & userID 🟢
 const generateRandomString = function() {
   return Math.random().toString(36).slice(2,8);
 };
 
-// check if eamil already exist in userDB, return userID or false 🟣
+// check if eamil already exist in userDB, return userID or false 🟢
 const getUserByEmail = function(userDB, userEmail) {
   for (const user in userDB) {
     if (users[user].email === userEmail) return users[user];
@@ -103,7 +103,7 @@ const getUserByEmail = function(userDB, userEmail) {
   return false;
 };
 
-// takes urlDB & id, returns DB of URLs where userID equals id 🟡
+// takes urlDB & id, returns DB of URLs where userID equals id 🟢
 const urlsForUser = function(urlDB, id) {
   const urlsFiltered = {};
   for (const url in urlDB) {
@@ -118,21 +118,24 @@ app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
 
-// render index template with DB of user's URLs & user Variables 🟡
+// render index template with DB of user's URLs & user Variables 🟢
 // If user is not logged in, shows message
 app.get("/urls", (req, res) => {
   const curUser = users[req.cookies.user_id];
   if (curUser) {
     const templateVars = {
       user: curUser,
-      urls: urlDatabase,
-      // urls: urlsForUser(urlDatabase, curUser.id)
+      urls: urlsForUser(urlDatabase, curUser.id)
     };
     res.render("urls_index", templateVars);
-    console.log("users  ",users);          // 🚨🚨🚨
-    console.log("cookies  ",req.cookies);  // 🚨🚨🚨
-    console.log("urlDB  ",urlDatabase);  // 🚨🚨🚨
-    console.log("🔶🔶🔶  ",urlsForUser(urlDatabase, users[req.cookies.user_id].id));  // 🚨🚨🚨
+    console.log("🔘 cookie  ",req.cookies);  // 🚨🚨🚨
+    console.log("-----------------------");  // 🚨🚨🚨
+    console.log("🔘 users  ",users);         // 🚨🚨🚨
+    console.log("-----------------------");  // 🚨🚨🚨
+    console.log("🔘 urlDB  ",urlDatabase);   // 🚨🚨🚨
+    console.log("-----------------------");  // 🚨🚨🚨
+    console.log("🔶 Filtered DB  ",urlsForUser(urlDatabase, users[req.cookies.user_id].id));  // 🚨🚨🚨
+    console.log("-----------------------");  // 🚨🚨🚨
   } else {
     const templateVars = {
       user: undefined,
@@ -142,7 +145,7 @@ app.get("/urls", (req, res) => {
   }
 });
     
-// render registration template 🟣
+// render registration template 🟢
 app.get("/register", (req, res) => {
   // if user logged in before just redirect to /urls
   if (users[req.cookies.user_id]) {
@@ -155,7 +158,7 @@ app.get("/register", (req, res) => {
   }
 });
 
-// render login template 🟣
+// render login template 🟢
 app.get("/login", (req, res) => {
   // if user logged in before just redirect to /urls
   if (users[req.cookies.user_id]) {
@@ -168,7 +171,7 @@ app.get("/login", (req, res) => {
   }
 });
 
-// render new template with user Variable 🔵
+// render new template with user Variable 🟢
 app.get("/urls/new", (req, res) => {
   // If someone is not logged in, can not go to url/new and will redirect to /login
   if (!users[req.cookies.user_id]) {
@@ -181,7 +184,7 @@ app.get("/urls/new", (req, res) => {
   }
 });
 
-// render show template with url & user Variables 🟡
+// render show template with url & user Variables 🟢
 // edit button in index template lead here
 // If user is not logged in, shows message
 // if asked shortURL is not for curUser shows error
@@ -189,6 +192,7 @@ app.get("/urls/:shortURL", (req,res) => {
   const curUser = users[req.cookies.user_id];
   if (curUser) {
     if (urlDatabase[req.params.shortURL]) {
+      // check url belongs to current user
       if (urlDatabase[req.params.shortURL].userID === curUser.id) {
         const templateVars = {
           shortURL: req.params.shortURL,
@@ -196,7 +200,7 @@ app.get("/urls/:shortURL", (req,res) => {
           user: curUser
         };
         res.render("urls_show", templateVars);
-      // not same user, shows error
+      // not same user, shows error access denied
       } else {
         const templateVars = {
           user: curUser,
@@ -214,7 +218,7 @@ app.get("/urls/:shortURL", (req,res) => {
       res.statusCode = errors.e1.code;
       res.render("error", templateVars);
     }
-  // not logged in befor
+  // not logged in before
   } else {
     const templateVars = {
       user: undefined,
@@ -224,10 +228,9 @@ app.get("/urls/:shortURL", (req,res) => {
   }
 });
 
-// link on the shortURL will redirect to it's longURL path 🔵
+// link on the shortURL will redirect to it's longURL path 🟢
 app.get("/u/:shortURL", (req,res) => {
   if (urlDatabase[req.params.shortURL]) {
-
     res.redirect(`${urlDatabase[req.params.shortURL].longURL}`);
   } else {
     const templateVars = {
@@ -239,7 +242,7 @@ app.get("/u/:shortURL", (req,res) => {
   }
 });
 
-// get longURL from form in new template, generate shortURL and add them in urlDB  then redirect 🔵
+// get longURL from form in new template, generate shortURL and add them in urlDB  then redirect 🟢
 app.post("/urls", (req, res) => {
   // shows error if someone without login try to creat new shortURL
   // it only can happen via terminal so error designed for terminal
@@ -253,12 +256,12 @@ app.post("/urls", (req, res) => {
       longURL: req.body.longURL,
       userID: curUser.id
     };
-    console.log("new   ",urlDatabase[shortURL]);      // 🚨🚨🚨
+    console.log("🔳 new  ",urlDatabase[shortURL]);      // 🚨🚨🚨
     res.redirect(`/urls/${shortURL}`);
   }
 });
 
-// get email & password from form in regestration template 🟣
+// get email & password from form in regestration template 🟢
 app.post("/register", (req,res) => {
   const newEmail = req.body.email;
   const newPass = req.body.password;
@@ -291,7 +294,7 @@ app.post("/register", (req,res) => {
   }
 });
 
-// delete button in index template - Delete row in urlDB then redirect 🟡
+// delete button in index template - Delete row in urlDB then redirect 🟢
 app.post("/urls/:shortURL/delete", (req,res) => {
   const curUser = users[req.cookies.user_id];
   // login required
@@ -308,7 +311,7 @@ app.post("/urls/:shortURL/delete", (req,res) => {
   }
 });
 
-// edit button in show template - Edit longURL in urlDB & redirect 🔵
+// edit button in show template - Edit longURL in urlDB & redirect 🟢
 app.post("/urls/:id", (req,res) => {
   const curUser = users[req.cookies.user_id];
   // login required
@@ -325,7 +328,7 @@ app.post("/urls/:id", (req,res) => {
   }
 });
 
-// login check 3 false situation, blank input or email not exist or password not match otherwise set cookie. 🟣
+// login check 3 false situation, blank input or email not exist or password not match otherwise set cookie. 🟢
 app.post("/login", (req, res) => {
   const curEmail = req.body.email;
   const curPass = req.body.password;
@@ -363,22 +366,18 @@ app.post("/login", (req, res) => {
   }
 });
   
-// clear cookie 🟣
+// clear cookie 🟢
 app.post("/logout", (req, res) => {
   res.clearCookie('user_id');
   res.redirect("/urls");
 });
 
-// this matches all routes and all methods- centralized error handler
+// this matches all routes and all methods- centralized error handler 🟢
 app.use((req, res) => {
-  // res.status(404).send({
-  // status: 404,
-  // error: 'Not found'
-  // })
   const templateVars = {
     user: users[req.cookies.user_id],
     error: errors.e9
   };
   res.statusCode = errors.e9.code;
   res.status(404).render("error", templateVars);
- })
+});
