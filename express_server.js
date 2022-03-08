@@ -1,7 +1,6 @@
 const express = require("express");
 const morgan = require("morgan");
 const bodyParser = require("body-parser");
-// const cookieParser = require("cookie-parser");
 const cookieSession = require("cookie-session");
 const bcrypt = require("bcryptjs");
 
@@ -11,14 +10,13 @@ const PORT = 8080; // default port 8080
 app.set("view engine", "ejs");
 app.use(morgan("dev"));
 app.use(bodyParser.urlencoded({extended: true}));
-// app.use(cookieParser());
 app.use(cookieSession({
   name: 'session',
   keys: ['key1', 'key2']
 }));
 app.use(express.static("public")); // dir public is root for images that we have.
 
-// startpoint urlsDB 🟢
+// startpoint urlsDB ⚪️
 const urlDatabase = {
   abc123: {
     longURL: "https://www.tsn.ca",
@@ -30,7 +28,7 @@ const urlDatabase = {
   }
 };
 
-// startpoint userDB 🟢
+// startpoint userDB ⚪️
 const users = {
   "123456": {
     id: "123456",
@@ -44,7 +42,7 @@ const users = {
   }
 };
 
-// error Database 🟢
+// error Database ⚪️
 const errors = {
   e1: {
     code: 404,
@@ -96,12 +94,12 @@ const errors = {
   },
 };
 
-// generating random alphanumeric length 6 for shortURL & userID 🟢
+// generating random alphanumeric length 6 for shortURL & userID ⚪️
 const generateRandomString = function() {
   return Math.random().toString(36).slice(2,8);
 };
 
-// check if eamil already exist in userDB, return userID or false 🟢
+// check if eamil already exist in userDB, return userID or false ⚪️
 const getUserByEmail = function(userDB, userEmail) {
   for (const user in userDB) {
     if (users[user].email === userEmail) return users[user];
@@ -109,7 +107,7 @@ const getUserByEmail = function(userDB, userEmail) {
   return false;
 };
 
-// takes urlDB & id, returns DB of URLs where userID equals id 🟢
+// takes urlDB & id, returns DB of URLs where userID equals id ⚪️
 const urlsForUser = function(urlDB, id) {
   const urlsFiltered = {};
   for (const url in urlDB) {
@@ -124,150 +122,138 @@ app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
 
-// render index template with DB of user's URLs & user Variables 🟢
-// If user is not logged in, shows message
+// render index template with DB of user's URLs & user Variables ⚪️
 app.get("/urls", (req, res) => {
   const curUser = users[req.session.user_id];
-  if (curUser) {
-    const templateVars = {
-      user: curUser,
-      urls: urlsForUser(urlDatabase, curUser.id)
-    };
-    res.render("urls_index", templateVars);
-    console.log("🔘 cookie  ",req.session);  // 🚨🚨🚨
-    console.log("-----------------------");  // 🚨🚨🚨
-    console.log("🔘 users  ",users);         // 🚨🚨🚨
-    console.log("-----------------------");  // 🚨🚨🚨
-    console.log("🔘 urlDB  ",urlDatabase);   // 🚨🚨🚨
-    console.log("-----------------------");  // 🚨🚨🚨
-    console.log("🔶 Filtered DB  ",urlsForUser(urlDatabase, users[req.session.user_id].id));  // 🚨🚨🚨
-    console.log("-----------------------");  // 🚨🚨🚨
-  } else {
-    const templateVars = {
-      user: undefined,
-      error: errors.e7
-    };
-    res.render("error", templateVars);
+  // If user is not logged in, shows message
+  if (!curUser) {
+  const templateVars = {
+    user: undefined,
+    error: errors.e7
+  };
+  return res.render("error", templateVars);
   }
+  const templateVars = {
+    user: curUser,
+    urls: urlsForUser(urlDatabase, curUser.id)
+  };
+  res.render("urls_index", templateVars);
+  console.log("🔘 cookie  ",req.session);  // 🚨🚨🚨
+  console.log("-----------------------");  // 🚨🚨🚨
+  console.log("🔘 users  ",users);         // 🚨🚨🚨
+  console.log("-----------------------");  // 🚨🚨🚨
+  console.log("🔘 urlDB  ",urlDatabase);   // 🚨🚨🚨
+  console.log("-----------------------");  // 🚨🚨🚨
+  console.log("🔶 Filtered DB  ",urlsForUser(urlDatabase, users[req.session.user_id].id));  // 🚨🚨🚨
+  console.log("-----------------------");  // 🚨🚨🚨
 });
     
-// render registration template 🟢
+// render registration template ⚪️
 app.get("/register", (req, res) => {
   // if user logged in before just redirect to /urls
   if (users[req.session.user_id]) {
-    res.redirect("/urls");
-  } else {
-    const templateVars = {
-      user: undefined
-    };
-    res.render("registeration", templateVars);
+    return res.redirect("/urls");
   }
+  const templateVars = {
+    user: undefined
+  };
+  res.render("registeration", templateVars);
 });
 
-// render login template 🟢
+// render login template ⚪️
 app.get("/login", (req, res) => {
-  // if user logged in before just redirect to /urls
+  // if user logged in before, redirect to /urls
   if (users[req.session.user_id]) {
-    res.redirect("/urls");
-  } else {
-    const templateVars = {
-      user: undefined
-    };
-    res.render("login", templateVars);
+    return res.redirect("/urls");
   }
+  const templateVars = {
+    user: undefined
+  };
+  res.render("login", templateVars);
 });
 
-// render new template with user Variable 🟢
+// render new template with user Variable ⚪️
 app.get("/urls/new", (req, res) => {
-  // If someone is not logged in, can not go to url/new and will redirect to /login
-  if (!users[req.session.user_id]) {
-    res.redirect('/login');
-  } else {
-    const templateVars = {
-      user: users[req.session.user_id]
-    };
-    res.render("urls_new", templateVars);
+  const curUser = users[req.session.user_id];
+  // If someone is not logged in, redirect to /login
+  if (!curUser) {
+    return res.redirect('/login');
   }
+  const templateVars = {
+    user: curUser
+  };
+  res.render("urls_new", templateVars);
 });
 
-// render show template with url & user Variables 🟢
+// render show template with url & user Variables ⚪️
 // edit button in index template lead here
-// If user is not logged in, shows message
-// if asked shortURL is not for curUser shows error
 app.get("/urls/:shortURL", (req,res) => {
   const curUser = users[req.session.user_id];
-  if (curUser) {
-    if (urlDatabase[req.params.shortURL]) {
-      // check url belongs to current user
-      if (urlDatabase[req.params.shortURL].userID === curUser.id) {
-        const templateVars = {
-          shortURL: req.params.shortURL,
-          longURL: urlDatabase[req.params.shortURL].longURL,
-          user: curUser
-        };
-        res.render("urls_show", templateVars);
-      // not same user, shows error access denied
-      } else {
-        const templateVars = {
-          user: curUser,
-          error: errors.e6
-        };
-        res.statusCode = errors.e6.code;
-        res.render("error", templateVars);
-      }
-    // if shortURL is not in DB, render error template with user and error variable
-    } else {
-      const templateVars = {
-        user: curUser,
-        error: errors.e1
-      };
-      res.statusCode = errors.e1.code;
-      res.render("error", templateVars);
-    }
-  // not logged in before
-  } else {
+  // If user is not logged in, shows message
+  if (!curUser) {
     const templateVars = {
       user: undefined,
       error: errors.e7
     };
-    res.render("error", templateVars);
+    return res.render("error", templateVars);
   }
-});
-
-// link on the shortURL will redirect to it's longURL path 🟢
-app.get("/u/:shortURL", (req,res) => {
-  if (urlDatabase[req.params.shortURL]) {
-    res.redirect(`${urlDatabase[req.params.shortURL].longURL}`);
-  } else {
+  // if shortURL is not in DB, render error template with user and 404 status code
+  if (!urlDatabase[req.params.shortURL]) {
     const templateVars = {
-      user: users[req.session.user_id],
+      user: curUser,
       error: errors.e1
     };
-    res.statusCode = errors.e1.code;
-    res.render("error", templateVars);
+    return res.status(404).render("error", templateVars);
   }
+  // If not same user, shows error access denied & status code 405
+  if (urlDatabase[req.params.shortURL].userID !== curUser.id) {
+    const templateVars = {
+      user: curUser,
+      error: errors.e6
+    };
+    return res.status(405).render("error", templateVars);
+  }
+  // after pass all edges
+  const templateVars = {
+    shortURL: req.params.shortURL,
+    longURL: urlDatabase[req.params.shortURL].longURL,
+    user: curUser
+  };
+  res.render("urls_show", templateVars);
 });
 
-// get longURL from form in new template, generate shortURL and add them in urlDB  then redirect 🟢
+// link on the shortURL will redirect to it's longURL path ⚪️
+// should work for any user (logged in or not)
+app.get("/u/:shortURL", (req,res) => {
+  if (urlDatabase[req.params.shortURL]) {
+    return res.redirect(`${urlDatabase[req.params.shortURL].longURL}`);
+  }
+  // If link is not valid return error with 404 status code
+  const templateVars = {
+    user: users[req.session.user_id],
+    error: errors.e1
+  };
+  res.status(404).render("error", templateVars);
+});
+
+// get longURL from form in new template, generate shortURL and add them in urlDB  then redirect ⚪️
 app.post("/urls", (req, res) => {
+  const curUser = users[req.session.user_id];
   // shows error if someone without login try to creat new shortURL
   // it only can happen via terminal so error designed for terminal
-  const curUser = users[req.session.user_id];
   if (!curUser) {
-    res.send("Access Denied, Login First!\n");
-    res.statusCode = 405;
-  } else {
-    const shortURL = generateRandomString();
-    urlDatabase[shortURL] = {
-      longURL: req.body.longURL,
-      userID: curUser.id
-    };
-    console.log("🔳 new  ",urlDatabase[shortURL]);      // 🚨🚨🚨
-    res.redirect(`/urls/${shortURL}`);
-  }
+    return res.status(405).send("Access Denied, Login First!\n");
+  } 
+  const shortURL = generateRandomString();
+  urlDatabase[shortURL] = {
+    longURL: req.body.longURL,
+    userID: curUser.id
+  };
+  console.log("🔳 New url pair  ",urlDatabase[shortURL]);      // 🚨🚨🚨
+  res.redirect(`/urls/${shortURL}`);
 });
 
-// get email & password from form in regestration template 🟠
+// get email & password from form in regestration template ⚪️
 app.post("/register", (req,res) => {
   const newEmail = req.body.email;
   const newPass = bcrypt.hashSync(req.body.password, 10);
@@ -277,64 +263,58 @@ app.post("/register", (req,res) => {
       user: undefined,
       error: errors.e2
     };
-    res.statusCode = errors.e2.code;
-    res.render("error", templateVars);
-    // If email already registerd, send response back with 400 status code
-  } else if (getUserByEmail(users, newEmail)) {
+    return res.status(400).render("error", templateVars);
+  } 
+  // If email already registerd, send response back with 400 status code
+  if (getUserByEmail(users, newEmail)) {
     const templateVars = {
       user: undefined,
       error: errors.e3
     };
-    res.statusCode = errors.e3.code;
-    res.render("error", templateVars);
+    return res.status(400).render("error", templateVars);
+  } 
   // otherwise generate id, add to userDB then redirect
-  } else {
-    const userID = generateRandomString();
-    users[userID] = {
-      id: userID,
-      email: newEmail,
-      password: newPass,
-    };
-    req.session.user_id = userID;
-    res.redirect("/urls");
-  }
+  const userID = generateRandomString();
+  users[userID] = {
+    id: userID,
+    email: newEmail,
+    password: newPass,
+  };
+  req.session.user_id = userID;
+  res.redirect("/urls");
 });
 
-// delete button in index template - Delete row in urlDB then redirect 🟢
+// delete button in index template - Delete row in urlDB then redirect ⚪️
 app.post("/urls/:shortURL/delete", (req,res) => {
   const curUser = users[req.session.user_id];
   // login required
   if (!curUser) {
-    res.send("Access Denied, Login First!\n");
-    res.statusCode = 405;
+    return res.status(405).send("Access Denied, Login First!\n");
+  } 
   // prevent to delete otherone's url, from cURL command in terminal
-  } else if (urlDatabase[req.params.shortURL].userID === curUser.id) {
-    delete urlDatabase[req.params.shortURL];
-    res.redirect("/urls");
-  } else {
-    res.send("Access Denied, This URL doesn't belong to you!\n");
-    res.statusCode = 405;
+  if (urlDatabase[req.params.shortURL].userID !== curUser.id) {
+    return res.status(405).send("Access Denied, This URL doesn't belong to you!\n");
   }
+  delete urlDatabase[req.params.shortURL];
+  res.redirect("/urls");
 });
 
-// edit button in show template - Edit longURL in urlDB & redirect 🟢
+// edit button in show template - Edit longURL in urlDB & redirect ⚪️
 app.post("/urls/:id", (req,res) => {
   const curUser = users[req.session.user_id];
   // login required
   if (!curUser) {
-    res.send("Access Denied, Login First!\n");
-    res.statusCode = 405;
+    return res.status(405).send("Access Denied, Login First!\n");
+  } 
   // prevent to Edit otherone's url, from cURL command in terminal
-  } else if (urlDatabase[req.params.id].userID === curUser.id) {
-    urlDatabase[req.params.id].longURL = req.body.longURL;
-    res.redirect("/urls");
-  } else {
-    res.send("Access Denied, This URL doesn't belong to you!\n");
-    res.statusCode = 405;
+  if (urlDatabase[req.params.id].userID !== curUser.id) {
+    return res.status(405).send("Access Denied, This URL doesn't belong to you!\n");
   }
+  urlDatabase[req.params.id].longURL = req.body.longURL;
+  res.redirect("/urls");
 });
 
-// login check 3 false situation, blank input or email not exist or password not match otherwise set cookie. 🟠
+// login check 3 false situation, blank input or email not exist or password not match otherwise set cookie. ⚪️
 app.post("/login", (req, res) => {
   const curEmail = req.body.email;
   const curPass = req.body.password;
@@ -344,46 +324,41 @@ app.post("/login", (req, res) => {
       user: undefined,
       error: errors.e2
     };
-    res.statusCode = errors.e2.code;
-    res.render("error", templateVars);
+    return res.status(400).render("error", templateVars);
+  }
   // if email is not exist, send back response with 403 status code
-  } else if (!getUserByEmail(users, curEmail)) {
+  if (!getUserByEmail(users, curEmail)) {
     const templateVars = {
       user: undefined,
       error: errors.e4
     };
-    res.statusCode = errors.e4.code;
-    res.render("error", templateVars);
-  } else {
-    const user = getUserByEmail(users, curEmail);
-    // if password does not match, send back response with 403 status code
-    if (!bcrypt.compareSync(curPass, user.password)) {
-      const templateVars = {
-        user: undefined,
-        error: errors.e5
-      };
-      res.statusCode = errors.e5.code;
-      res.render("error", templateVars);
-    } else {
-      // set cookie and redirect
-      req.session.user_id = user.id;
-      res.redirect("/urls");
-    }
+    return res.status(403).render("error", templateVars);
+  } 
+  const user = getUserByEmail(users, curEmail);
+  // if password does not match, send back response with 403 status code
+  if (!bcrypt.compareSync(curPass, user.password)) {
+    const templateVars = {
+      user: undefined,
+      error: errors.e5
+    };
+    return res.status(403).render("error", templateVars);
   }
+  // set cookie and redirect
+  req.session.user_id = user.id;
+  res.redirect("/urls");
 });
   
-// clear cookie 🟢
+// logout & clear cookie ⚪️
 app.post("/logout", (req, res) => {
   req.session = null;
   res.redirect("/urls");
 });
 
-// this matches all routes and all methods- centralized error handler 🟢
+// this matches all routes and all methods- centralized error handler ⚪️
 app.use((req, res) => {
   const templateVars = {
     user: users[req.session.user_id],
     error: errors.e9
   };
-  res.statusCode = errors.e9.code;
   res.status(404).render("error", templateVars);
 });
