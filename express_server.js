@@ -3,7 +3,7 @@ const morgan = require("morgan");
 const bodyParser = require("body-parser");
 const cookieSession = require("cookie-session");
 const bcrypt = require("bcryptjs");
-const { getUserByEmail } = require("./helpers")
+const { generateRandomString, getUserByEmail, urlsForUser } = require("./helpers")
 
 const app = express();
 const PORT = 8080; // default port 8080
@@ -95,22 +95,6 @@ const errors = {
   },
 };
 
-// generating random alphanumeric length 6 for shortURL & userID ⚪️
-const generateRandomString = function() {
-  return Math.random().toString(36).slice(2,8);
-};
-
-// takes urlDB & id, returns DB of URLs where userID equals id ⚪️
-const urlsForUser = function(urlDB, id) {
-  const urlsFiltered = {};
-  for (const url in urlDB) {
-    if (urlDB[url].userID === id) {
-      urlsFiltered[url] = urlDB[url];
-    }
-  }
-  return urlsFiltered;
-};
-
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
@@ -128,7 +112,7 @@ app.get("/urls", (req, res) => {
   }
   const templateVars = {
     user: curUser,
-    urls: urlsForUser(urlDatabase, curUser.id)
+    urls: urlsForUser(curUser.id, urlDatabase)
   };
   res.render("urls_index", templateVars);
   console.log("🔘 cookie  ",req.session);  // 🚨🚨🚨
@@ -137,32 +121,8 @@ app.get("/urls", (req, res) => {
   console.log("-----------------------");  // 🚨🚨🚨
   console.log("🔘 urlDB  ",urlDatabase);   // 🚨🚨🚨
   console.log("-----------------------");  // 🚨🚨🚨
-  console.log("🔶 Filtered DB  ",urlsForUser(urlDatabase, users[req.session.user_id].id));  // 🚨🚨🚨
+  console.log("🔶 Filtered DB  ",urlsForUser(users[req.session.user_id].id, urlDatabase));  // 🚨🚨🚨
   console.log("-----------------------");  // 🚨🚨🚨
-});
-    
-// render registration template ⚪️
-app.get("/register", (req, res) => {
-  // if user logged in before just redirect to /urls
-  if (users[req.session.user_id]) {
-    return res.redirect("/urls");
-  }
-  const templateVars = {
-    user: undefined
-  };
-  res.render("registeration", templateVars);
-});
-
-// render login template ⚪️
-app.get("/login", (req, res) => {
-  // if user logged in before, redirect to /urls
-  if (users[req.session.user_id]) {
-    return res.redirect("/urls");
-  }
-  const templateVars = {
-    user: undefined
-  };
-  res.render("login", templateVars);
 });
 
 // render new template with user Variable ⚪️
@@ -246,6 +206,60 @@ app.post("/urls", (req, res) => {
   res.redirect(`/urls/${shortURL}`);
 });
 
+// delete button in index template - Delete row in urlDB then redirect ⚪️
+app.post("/urls/:shortURL/delete", (req,res) => {
+  const curUser = users[req.session.user_id];
+  // login required
+  if (!curUser) {
+    return res.status(405).send("Access Denied, Login First!\n");
+  } 
+  // prevent to delete otherone's url, from cURL command in terminal
+  if (urlDatabase[req.params.shortURL].userID !== curUser.id) {
+    return res.status(405).send("Access Denied, This URL doesn't belong to you!\n");
+  }
+  delete urlDatabase[req.params.shortURL];
+  res.redirect("/urls");
+});
+
+// edit button in show template - Edit longURL in urlDB & redirect ⚪️
+app.post("/urls/:id", (req,res) => {
+  const curUser = users[req.session.user_id];
+  // login required
+  if (!curUser) {
+    return res.status(405).send("Access Denied, Login First!\n");
+  } 
+  // prevent to Edit otherone's url, from cURL command in terminal
+  if (urlDatabase[req.params.id].userID !== curUser.id) {
+    return res.status(405).send("Access Denied, This URL doesn't belong to you!\n");
+  }
+  urlDatabase[req.params.id].longURL = req.body.longURL;
+  res.redirect("/urls");
+});
+    
+// render registration template ⚪️
+app.get("/register", (req, res) => {
+  // if user logged in before just redirect to /urls
+  if (users[req.session.user_id]) {
+    return res.redirect("/urls");
+  }
+  const templateVars = {
+    user: undefined
+  };
+  res.render("registeration", templateVars);
+});
+
+// render login template ⚪️
+app.get("/login", (req, res) => {
+  // if user logged in before, redirect to /urls
+  if (users[req.session.user_id]) {
+    return res.redirect("/urls");
+  }
+  const templateVars = {
+    user: undefined
+  };
+  res.render("login", templateVars);
+});
+
 // get email & password from form in regestration template ⚪️
 app.post("/register", (req,res) => {
   const newEmail = req.body.email;
@@ -274,36 +288,6 @@ app.post("/register", (req,res) => {
     password: newPass,
   };
   req.session.user_id = userID;
-  res.redirect("/urls");
-});
-
-// delete button in index template - Delete row in urlDB then redirect ⚪️
-app.post("/urls/:shortURL/delete", (req,res) => {
-  const curUser = users[req.session.user_id];
-  // login required
-  if (!curUser) {
-    return res.status(405).send("Access Denied, Login First!\n");
-  } 
-  // prevent to delete otherone's url, from cURL command in terminal
-  if (urlDatabase[req.params.shortURL].userID !== curUser.id) {
-    return res.status(405).send("Access Denied, This URL doesn't belong to you!\n");
-  }
-  delete urlDatabase[req.params.shortURL];
-  res.redirect("/urls");
-});
-
-// edit button in show template - Edit longURL in urlDB & redirect ⚪️
-app.post("/urls/:id", (req,res) => {
-  const curUser = users[req.session.user_id];
-  // login required
-  if (!curUser) {
-    return res.status(405).send("Access Denied, Login First!\n");
-  } 
-  // prevent to Edit otherone's url, from cURL command in terminal
-  if (urlDatabase[req.params.id].userID !== curUser.id) {
-    return res.status(405).send("Access Denied, This URL doesn't belong to you!\n");
-  }
-  urlDatabase[req.params.id].longURL = req.body.longURL;
   res.redirect("/urls");
 });
 
