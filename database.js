@@ -52,19 +52,19 @@ const errors = {
 
 // startpoint urlsDB ⚪️
 const urlDatabase = {
-/*   abc123: {
+  abc123: {
     longURL: "https://www.tsn.ca",
     userID: "123456"
   },
   efg456: {
     longURL: "https://www.google.ca",
     userID: "123456"
-  } */
+  }
 };
 
 // startpoint userDB ⚪️
 const users = {
-/*   "123456": {
+  "123456": {
     id: "123456",
     email: "1@g.com",
     password: '$2a$10$W8FvFYIGVqZ7seHc0upQ0ODgTAuZhQGzvhOKjMLdxDMv.LWVpS0ea'
@@ -73,7 +73,7 @@ const users = {
     id: "abcdef",
     email: "2@g.com",
     password: '$2a$10$B2ov0fKHaEzgyit4AhT6IepvK7BzseRz8A8zR/./.TCWthjv5MyfC'
-  } */
+  }
 };
 
 module.exports = { urlDatabase, users, errors };

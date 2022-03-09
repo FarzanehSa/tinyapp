@@ -3,8 +3,9 @@ const morgan = require("morgan");
 const bodyParser = require("body-parser");
 const cookieSession = require("cookie-session");
 const bcrypt = require("bcryptjs");
-const { generateRandomString, getUserByEmail, urlsForUser } = require("./helpers")
-const { urlDatabase, users, errors } = require("./database")
+const methodOverride = require("method-override");
+const { generateRandomString, getUserByEmail, urlsForUser } = require("./helpers");
+const { urlDatabase, users, errors } = require("./database");
 
 const app = express();
 const PORT = 8080; // default port 8080
@@ -17,6 +18,7 @@ app.use(cookieSession({
   keys: ['key1', 'key2']
 }));
 app.use(express.static("public")); // dir public is root for images that we have.
+app.use(methodOverride("_method"));
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
@@ -130,7 +132,7 @@ app.post("/urls", (req, res) => {
 });
 
 // delete button in index template - Delete row in urlDB then redirect ⚪️
-app.post("/urls/:shortURL/delete", (req,res) => {
+app.delete("/urls/:shortURL/delete", (req,res) => {
   const curUser = users[req.session.user_id];
   // login required
   if (!curUser) {
@@ -145,7 +147,7 @@ app.post("/urls/:shortURL/delete", (req,res) => {
 });
 
 // edit button in show template - Edit longURL in urlDB & redirect ⚪️
-app.post("/urls/:id", (req,res) => {
+app.put("/urls/:id", (req,res) => {
   const curUser = users[req.session.user_id];
   // login required
   if (!curUser) {
