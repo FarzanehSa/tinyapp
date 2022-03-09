@@ -29,11 +29,11 @@ app.get("/urls", (req, res) => {
   const curUser = users[req.session.user_id];
   // If user is not logged in, shows message
   if (!curUser) {
-  const templateVars = {
-    user: undefined,
-    error: errors.e7
-  };
-  return res.render("error", templateVars);
+    const templateVars = {
+      user: undefined,
+      error: errors.e7
+    };
+    return res.render("error", templateVars);
   }
   const templateVars = {
     user: curUser,
@@ -121,7 +121,7 @@ app.post("/urls", (req, res) => {
   // it only can happen via terminal so error designed for terminal
   if (!curUser) {
     return res.status(405).send("Access Denied, Login First!\n");
-  } 
+  }
   const shortURL = generateRandomString();
   urlDatabase[shortURL] = {
     longURL: req.body.longURL,
@@ -137,7 +137,7 @@ app.delete("/urls/:shortURL/delete", (req,res) => {
   // login required
   if (!curUser) {
     return res.status(405).send("Access Denied, Login First!\n");
-  } 
+  }
   // prevent to delete otherone's url, from cURL command in terminal
   if (urlDatabase[req.params.shortURL].userID !== curUser.id) {
     return res.status(405).send("Access Denied, This URL doesn't belong to you!\n");
@@ -152,7 +152,7 @@ app.put("/urls/:id", (req,res) => {
   // login required
   if (!curUser) {
     return res.status(405).send("Access Denied, Login First!\n");
-  } 
+  }
   // prevent to Edit otherone's url, from cURL command in terminal
   if (urlDatabase[req.params.id].userID !== curUser.id) {
     return res.status(405).send("Access Denied, This URL doesn't belong to you!\n");
@@ -196,7 +196,7 @@ app.post("/register", (req,res) => {
       error: errors.e2
     };
     return res.status(400).render("error", templateVars);
-  } 
+  }
   // If email already registerd, send response back with 400 status code
   if (getUserByEmail(newEmail, users)) {
     const templateVars = {
@@ -204,7 +204,7 @@ app.post("/register", (req,res) => {
       error: errors.e3
     };
     return res.status(400).render("error", templateVars);
-  } 
+  }
   // otherwise generate id, add to userDB then redirect
   const userID = generateRandomString();
   users[userID] = {
@@ -235,7 +235,7 @@ app.post("/login", (req, res) => {
       error: errors.e4
     };
     return res.status(403).render("error", templateVars);
-  } 
+  }
   const user = getUserByEmail(curEmail, users);
   // if password does not match, send back response with 403 status code
   if (!bcrypt.compareSync(curPass, user.password)) {
