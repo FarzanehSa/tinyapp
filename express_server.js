@@ -159,7 +159,7 @@ app.post("/urls", (req, res) => {
       user: undefined,
       error: errors.e10
     };
-    res.status(405).render("error", templateVars);
+    return res.status(405).render("error", templateVars);
   }
   const shortURL = generateRandomString();
   urlDatabase[shortURL] = {
@@ -180,7 +180,7 @@ app.delete("/urls/:shortURL/delete", (req,res) => {
       user: undefined,
       error: errors.e10
     };
-    res.status(405).render("error", templateVars);
+    return res.status(405).render("error", templateVars);
   }
   // prevent to delete otherone's url, from cURL command in terminal
   if (urlDatabase[req.params.shortURL].userID !== curUser.id) {
@@ -201,7 +201,7 @@ app.put("/urls/:id", (req,res) => {
       user: undefined,
       error: errors.e10
     };
-    res.status(405).render("error", templateVars);
+    return res.status(405).render("error", templateVars);
   }
   // prevent to Edit otherone's url, from cURL command in terminal
   if (urlDatabase[req.params.id].userID !== curUser.id) {
