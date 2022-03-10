@@ -145,13 +145,21 @@ app.get("/u/:shortURL", (req,res) => {
   res.status(404).render("error", templateVars);
 });
 
+// change the start point
+app.get("/", (req,res) => {
+  res.redirect("/urls");
+});
+
 // get longURL from form in new template, generate shortURL and add them in urlDB  then redirect ⚪️
 app.post("/urls", (req, res) => {
   const curUser = users[req.session.user_id];
   // shows error if someone without login try to creat new shortURL
-  // it only can happen via terminal so error designed for terminal
   if (!curUser) {
-    return res.status(405).send("Access Denied, Login First!\n");
+    const templateVars = {
+      user: undefined,
+      error: errors.e10
+    };
+    res.status(405).render("error", templateVars);
   }
   const shortURL = generateRandomString();
   urlDatabase[shortURL] = {
@@ -168,7 +176,11 @@ app.delete("/urls/:shortURL/delete", (req,res) => {
   const curUser = users[req.session.user_id];
   // login required
   if (!curUser) {
-    return res.status(405).send("Access Denied, Login First!\n");
+    const templateVars = {
+      user: undefined,
+      error: errors.e10
+    };
+    res.status(405).render("error", templateVars);
   }
   // prevent to delete otherone's url, from cURL command in terminal
   if (urlDatabase[req.params.shortURL].userID !== curUser.id) {
@@ -185,7 +197,11 @@ app.put("/urls/:id", (req,res) => {
   const curUser = users[req.session.user_id];
   // login required
   if (!curUser) {
-    return res.status(405).send("Access Denied, Login First!\n");
+    const templateVars = {
+      user: undefined,
+      error: errors.e10
+    };
+    res.status(405).render("error", templateVars);
   }
   // prevent to Edit otherone's url, from cURL command in terminal
   if (urlDatabase[req.params.id].userID !== curUser.id) {

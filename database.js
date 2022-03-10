@@ -48,6 +48,12 @@ const errors = {
     h5: "",
     image: "pageNotExist"
   },
+  e10: {
+    code: 405,
+    h3: "Access Denied",
+    h5: "Please login first!",
+    image: "accessDenied"
+  },
 };
 
 // startpoint urlsDB ⚪️
