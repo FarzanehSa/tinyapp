@@ -8,51 +8,81 @@
   
 <body>
   <%- include('partials/_header') %>
-  <div class="card text-center">
-      <div class="card-header"></div>
-      <div class="card-body">
-        <h5 class="card-title">TinyURL for: <%= longURL %></h5>
-        <p class="card-text">Short URL: <a target="_blank" href="/u/<%= shortURL %>"><%= shortURL %></a></p>
-      </div>
-  </div>
-  <div class="card bg-light mb-3 text-center">
-    <div class="card-body">
-      <h3 class="card-title">Edit</h3>
-      <p class="card-text">
-        <form class="form-align center" action="/urls/<%= shortURL %>?_method=PUT" method="POST">
-          <label for="longURL">New URL:</label>
-          <!-- <input class="form-control-align center" type="text" name="longURL" id="longURL" placeholder="<%= longURL %>" required="true" style="width: 300px; margin: 1em"> -->
-          <input class="form-control-align center" type="url" pattern="https?://.+" name="longURL" id="longURL" placeholder="<%= longURL %>" style="width: 300px; margin: 1em" required/>
-
-          <button type="submit" class="btn btn-primary">Submit</button>
-        </form>
-      </p>
-      <% if (totalVisitNum) { %>
-        <div class="p-3 mb-2 bg-warning text-dark">
-          <h4>
-            <span><a href="#" class="text-danger"><%= shortURL %></a></span>
-            <span> has been visited </span>
-            <span><a href="#" class="text-success"><%= totalVisitNum %></a></span>
-            <% if (totalVisitNum === 1) { %>
-              <span> time. </span>
-            <% } else { %>
-              <span> times. </span>
-            <% } %>
-          </h4>
-          <h5>
-            <span> It has been visited by </span>
-            <span><a href="#" class="text-success"><%= uniqueVisitNum %></a></span>
-            <% if (uniqueVisitNum === 1) { %>
-              <span> user. </span>
-            <% } else { %>
-              <span> different users. </span>
-            <% } %>
-          </h5>
+  <div class="container-fluid">
+    <div class="row justify-content-md-center mt-3">
+      <div class="card text-center col-md-11 border-success">
+        <div class="card-header">
+          <h4 class="card-title">
+            <span >for: </span>
+            <span class="text-success"><%= longURL %></span>  
+          </h4> 
         </div>
-      <% } %>
-      <!-- ----------- -->
-      <div>
-        <h3>History</h3>
+        <div class="card-body">
+          <p class="card-text">
+            <h1>Short URL: <a target="_blank" href="/u/<%= shortURL %>"><%= shortURL %></a></h1>
+          </p>
+        </div>
+      </div>
+    </div>
+    <!-- ----------- -->
+    <div class="row mt-2">
+      <div class="col-sm-6">
+        <div class="card text-center border-warning">
+          <div class="card-header bg-warning">
+            <h3>Edit</h2>
+          </div>
+          <div class="card-body bg-light text-black border border-warning">
+            <p class="card-text">
+              <form class="form-align center" action="/urls/<%= shortURL %>?_method=PUT" method="POST">
+                <label for="longURL">New URL:</label>
+                <input class="form-control-align center" type="url" pattern="https?://.+" name="longURL" id="longURL" placeholder="<%= longURL %>" style="width: 300px; margin: 1em" required/>
+                <button type="submit" class="btn btn-primary">Submit</button>
+              </form>
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-6">
+        <div class="card text-center border border-info">
+          <div class="card-header bg-info text-white">
+            <h3>ٰVisit Repor</h2>
+          </div>
+          <div class="card-body bg-light text-center border border-info">
+            <p class="card-text">
+              <h4>
+                <span><a href="#" class="text-danger"><%= shortURL %></a></span>
+                <span> has been visited </span>
+                <span><a href="#" class="text-success"><%= totalVisitNum %></a></span>
+                <% if (totalVisitNum === 1 || totalVisitNum === 0) { %>
+                  <span> time. </span>
+                <% } else { %>
+                  <span> times. </span>
+                <% } %>
+              </h4>
+              <% if (totalVisitNum) { %>
+                <h5>
+                  <span> It has been visited by </span>
+                  <span><a href="#" class="text-success"><%= uniqueVisitNum %></a></span>
+                  <% if (uniqueVisitNum === 1) { %>
+                    <span> user. </span>
+                  <% } else { %>
+                    <span> different users. </span>
+                  <% } %>
+                </h5>
+              <% } else { %>
+                <h5>-</h5>
+              <% } %>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- ----------- -->
+    <div class="row justify-content-md-center mt-2">
+      <div class="card text-center col-md-11 border-success"> 
+        <div class="card-header  bg-light">
+          <h3>Short URL Visit History</h2>
+        </div>
         <table class="table">
           <thead>
             <tr>
@@ -72,10 +102,8 @@
           </tbody>
         </table>
       </div>
-      <!-- ----------- -->
     </div>
   </div>
-
   <!-- Bootstrap JS -->
   <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
