@@ -15,7 +15,7 @@ app.use(morgan("dev"));
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieSession({
   name: 'session',
-  keys: ['key1', 'key2']
+  keys: ['s!m!Nj00n', 'N!i!RVan1']
 }));
 app.use(express.static("public")); // dir public is root for images that we have.
 app.use(methodOverride("_method"));

@@ -73,13 +73,13 @@ const users = {
 /*   "123456": {
     id: "123456",
     email: "1@g.com",
-    password: '$2a$10$W8FvFYIGVqZ7seHc0upQ0ODgTAuZhQGzvhOKjMLdxDMv.LWVpS0ea',
+    password: '$2a$10$V0zqZ90LapWEVTH8ki5JcOJxmyq6Iziu5jRqJ7OXC9pD8Zo7x5kDm',
     visitorID: "000000",
   },
   "abcdef": {
     id: "abcdef",
     email: "2@g.com",
-    password: '$2a$10$B2ov0fKHaEzgyit4AhT6IepvK7BzseRz8A8zR/./.TCWthjv5MyfC',
+    password: '$2a$10$K8/2GlqTWqCB8eOte2d.1e5sUOwtcbVpSQdOeqbmGhLsLhfLJQtMi',
     visitorID: "111111",
   } */
 };
