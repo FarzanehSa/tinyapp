@@ -21,7 +21,7 @@ app.use(express.static("public")); // dir public is root for images that we have
 app.use(methodOverride("_method"));
 
 app.listen(PORT, () => {
-  console.log(`Example app listening on port ${PORT}!`);
+  console.log(`Tiny app listening on port ${PORT}!`);
 });
 
 // render index template with DB of user's URLs & user Variables ⚪️
