@@ -4,8 +4,8 @@ const bodyParser = require("body-parser");
 const cookieSession = require("cookie-session");
 const bcrypt = require("bcryptjs");
 const methodOverride = require("method-override");
-const { generateRandomString, getUserByEmail, urlsForUser } = require("./helpers");
-const { urlDatabase, users, errors } = require("./database");
+const { generateRandomString, getUserByEmail, urlsForUser, nextID, totalVisit, findVisitor, convertTimestamp } = require("./helpers");
+const { urlDatabase, users, errors, visitUrlDB, uniqueUsersVisit } = require("./database");
 
 const app = express();
 const PORT = 8080; // default port 8080
@@ -40,14 +40,14 @@ app.get("/urls", (req, res) => {
     urls: urlsForUser(curUser.id, urlDatabase)
   };
   res.render("urls_index", templateVars);
-  console.log("🔘 cookie  ",req.session);  // 🚨🚨🚨
-  console.log("-----------------------");  // 🚨🚨🚨
-  console.log("🔘 users  ",users);         // 🚨🚨🚨
-  console.log("-----------------------");  // 🚨🚨🚨
-  console.log("🔘 urlDB  ",urlDatabase);   // 🚨🚨🚨
-  console.log("-----------------------");  // 🚨🚨🚨
-  console.log("🔶 Filtered DB  ",urlsForUser(users[req.session.user_id].id, urlDatabase));  // 🚨🚨🚨
-  console.log("-----------------------");  // 🚨🚨🚨
+  // console.log("🔘 cookie  ",req.session);  // 🚨🚨🚨
+  // console.log("-----------------------");  // 🚨🚨🚨
+  // console.log("🔘 users  ",users);         // 🚨🚨🚨
+  // console.log("-----------------------");  // 🚨🚨🚨
+  // console.log("🔘 urlDB  ",urlDatabase);   // 🚨🚨🚨
+  // console.log("-----------------------");  // 🚨🚨🚨
+  // console.log("🔶 Filtered DB  ",urlsForUser(users[req.session.user_id].id, urlDatabase));  // 🚨🚨🚨
+  // console.log("-----------------------");  // 🚨🚨🚨
 });
 
 // render new template with user Variable ⚪️
@@ -63,8 +63,9 @@ app.get("/urls/new", (req, res) => {
   res.render("urls_new", templateVars);
 });
 
-// render show template with url & user Variables ⚪️
+// render show template ⚪️
 // edit button in index template lead here
+// show : visit history & total visit & total unique vist
 app.get("/urls/:shortURL", (req,res) => {
   const curUser = users[req.session.user_id];
   // If user is not logged in, shows message
@@ -92,19 +93,49 @@ app.get("/urls/:shortURL", (req,res) => {
     return res.status(405).render("error", templateVars);
   }
   // after pass all edges
+  const shortURL = req.params.shortURL;
+  const longURL = urlDatabase[shortURL].longURL;
+  const totalVisitNum = totalVisit(shortURL, visitUrlDB);
+  const uniqueVisitNum = uniqueUsersVisit[shortURL];
   const templateVars = {
-    shortURL: req.params.shortURL,
-    longURL: urlDatabase[req.params.shortURL].longURL,
-    user: curUser
+    user: curUser,
+    shortURL,
+    longURL,
+    totalVisitNum,
+    uniqueVisitNum,
+    visits: visitUrlDB[shortURL]
   };
   res.render("urls_show", templateVars);
 });
 
 // link on the shortURL will redirect to it's longURL path ⚪️
 // should work for any user (logged in or not)
+// track all usres that visit shortURL, using visitUrlDB
 app.get("/u/:shortURL", (req,res) => {
-  if (urlDatabase[req.params.shortURL]) {
-    return res.redirect(`${urlDatabase[req.params.shortURL].longURL}`);
+  const shortURL = req.params.shortURL;
+  if (urlDatabase[shortURL]) {
+    // if user not logged in before generate visitorID here and set cookie!
+    if (!req.session.visitor_id) {
+      req.session.visitor_id = generateRandomString();
+    }
+    const visitorID = req.session.visitor_id;
+    // If visitorID visit url for the first time -> increment uniqueUsersVisit .
+    if (!findVisitor(visitorID, shortURL, visitUrlDB)) {
+      uniqueUsersVisit[shortURL] = (uniqueUsersVisit[shortURL] || 0) + 1;
+    }
+    // update visitUrlDB with time, date & ID
+    const key = nextID(shortURL, visitUrlDB);
+    const timeStamp = new Date();
+    const {date, time} = convertTimestamp(timeStamp);
+    visitUrlDB[shortURL][key] = {
+      visitorID,
+      date,
+      time
+    };
+    // console.log("🟣🟣 Visit URL Database:\n",visitUrlDB);               // 🚨🚨🚨
+    // console.log("🟣🟣 uniqueDB  ",uniqueUsersVisit);                    // 🚨🚨🚨
+    // console.log("🟣🟣 total Visit ", totalVisit(shortURL, visitUrlDB)); // 🚨🚨🚨
+    return res.redirect(`${urlDatabase[shortURL].longURL}`);
   }
   // If link is not valid return error with 404 status code
   const templateVars = {
@@ -125,13 +156,14 @@ app.post("/urls", (req, res) => {
   const shortURL = generateRandomString();
   urlDatabase[shortURL] = {
     longURL: req.body.longURL,
-    userID: curUser.id
+    userID: curUser.id,
   };
-  console.log("🔳 New url pair  ",urlDatabase[shortURL]);      // 🚨🚨🚨
+  // console.log("🔳 New url pair  ",urlDatabase[shortURL]);      // 🚨🚨🚨
   res.redirect(`/urls/${shortURL}`);
 });
 
 // delete button in index template - Delete row in urlDB then redirect ⚪️
+// if there is related data in other databases delete them
 app.delete("/urls/:shortURL/delete", (req,res) => {
   const curUser = users[req.session.user_id];
   // login required
@@ -143,6 +175,8 @@ app.delete("/urls/:shortURL/delete", (req,res) => {
     return res.status(405).send("Access Denied, This URL doesn't belong to you!\n");
   }
   delete urlDatabase[req.params.shortURL];
+  if (visitUrlDB[req.params.shortURL]) delete visitUrlDB[req.params.shortURL];
+  if (uniqueUsersVisit[req.params.shortURL]) delete uniqueUsersVisit[req.params.shortURL];
   res.redirect("/urls");
 });
 
@@ -205,14 +239,18 @@ app.post("/register", (req,res) => {
     };
     return res.status(400).render("error", templateVars);
   }
-  // otherwise generate id, add to userDB then redirect
+  // otherwise generate id for user and as visitor
+  // add to userDB, set cookies and redirect
   const userID = generateRandomString();
+  const visitorID = generateRandomString();
   users[userID] = {
     id: userID,
     email: newEmail,
     password: newPass,
+    visitorID: visitorID,
   };
   req.session.user_id = userID;
+  req.session.visitor_id = visitorID;
   res.redirect("/urls");
 });
 
@@ -245,8 +283,9 @@ app.post("/login", (req, res) => {
     };
     return res.status(403).render("error", templateVars);
   }
-  // set cookie and redirect
+  // set cookies and redirect
   req.session.user_id = user.id;
+  req.session.visitor_id = user.visitorID;
   res.redirect("/urls");
 });
   

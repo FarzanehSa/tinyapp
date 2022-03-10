@@ -12,7 +12,7 @@
       <div class="card-header"></div>
       <div class="card-body">
         <h5 class="card-title">TinyURL for: <%= longURL %></h5>
-        <p class="card-text">Short URL: <a href="/u/<%= shortURL %>"><%= shortURL %></a></p>
+        <p class="card-text">Short URL: <a target="_blank" href="/u/<%= shortURL %>"><%= shortURL %></a></p>
       </div>
   </div>
   <div class="card bg-light mb-3 text-center">
@@ -25,9 +25,54 @@
           <button type="submit" class="btn btn-primary">Submit</button>
         </form>
       </p>
+      <% if (totalVisitNum) { %>
+        <div class="p-3 mb-2 bg-warning text-dark">
+          <h4>
+            <span><a href="#" class="text-danger"><%= shortURL %></a></span>
+            <span> has been visited </span>
+            <span><a href="#" class="text-success"><%= totalVisitNum %></a></span>
+            <% if (totalVisitNum === 1) { %>
+              <span> time. </span>
+            <% } else { %>
+              <span> times. </span>
+            <% } %>
+          </h4>
+          <h5>
+            <span> It has been visited by </span>
+            <span><a href="#" class="text-success"><%= uniqueVisitNum %></a></span>
+            <% if (uniqueVisitNum === 1) { %>
+              <span> user. </span>
+            <% } else { %>
+              <span> different users. </span>
+            <% } %>
+          </h5>
+        </div>
+      <% } %>
+      <!-- ----------- -->
+      <div>
+        <h3>History</h3>
+        <table class="table">
+          <thead>
+            <tr>
+              <th scope="col">Visitor ID</th>
+              <th scope="col">Date</th>
+              <th scope="col">Time</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% for(let key in visits) { %>
+              <tr>
+                <td><%= visits[key].visitorID %></td>
+                <td><%= visits[key].date %></td>
+                <td><%= visits[key].time %></td>
+              </tr>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+      <!-- ----------- -->
     </div>
   </div>
-
 
   <!-- Bootstrap JS -->
   <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>

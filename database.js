@@ -54,11 +54,11 @@ const errors = {
 const urlDatabase = {
   abc123: {
     longURL: "https://www.tsn.ca",
-    userID: "123456"
+    userID: "123456",
   },
   efg456: {
     longURL: "https://www.google.ca",
-    userID: "123456"
+    userID: "123456",
   }
 };
 
@@ -67,13 +67,28 @@ const users = {
   "123456": {
     id: "123456",
     email: "1@g.com",
-    password: '$2a$10$W8FvFYIGVqZ7seHc0upQ0ODgTAuZhQGzvhOKjMLdxDMv.LWVpS0ea'
+    password: '$2a$10$W8FvFYIGVqZ7seHc0upQ0ODgTAuZhQGzvhOKjMLdxDMv.LWVpS0ea',
+    visitorID: "000000",
   },
   "abcdef": {
     id: "abcdef",
     email: "2@g.com",
-    password: '$2a$10$B2ov0fKHaEzgyit4AhT6IepvK7BzseRz8A8zR/./.TCWthjv5MyfC'
+    password: '$2a$10$B2ov0fKHaEzgyit4AhT6IepvK7BzseRz8A8zR/./.TCWthjv5MyfC',
+    visitorID: "111111",
   }
 };
 
-module.exports = { urlDatabase, users, errors };
+// url visit history ⚪️
+const visitUrlDB = {
+  xxxooo: {
+    1: {visitorID: 'aaa111', time: 0 },
+    2: { visitorID: 'ertdhf', time: 0 }
+  },
+};
+
+// Just keep the data of unique visitor of each url ⚪️
+const uniqueUsersVisit = {
+  xxxooo: 2,
+};
+
+module.exports = { urlDatabase, users, errors, visitUrlDB, uniqueUsersVisit };
