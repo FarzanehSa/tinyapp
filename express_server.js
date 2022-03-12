@@ -172,7 +172,7 @@ app.post("/urls", (req, res) => {
 
 // delete button in index template - Delete row in urlDB then redirect ⚪️
 // if there is related data in other databases delete them
-app.delete("/urls/:shortURL/delete", (req,res) => {
+app.delete("/urls/:shortURL", (req,res) => {
   const curUser = users[req.session.user_id];
   // login required
   if (!curUser) {
