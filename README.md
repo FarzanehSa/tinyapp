@@ -75,5 +75,5 @@ You can provide this link to any one you want.
 
 !["Error-Access Denied"](https://github.com/FarzanehSa/tinyapp/blob/main/docs/Error-%20Access%20Denied.png?raw=true)
 
-!["Error-Registration"](https://github.com/FarzanehSa/tinyapp/blob/main/docs/Error-%20Registration.png?raw=true)
+!["Error-Login"](https://github.com/FarzanehSa/tinyapp/blob/main/docs/Error-%20Login.png?raw=true)
 
