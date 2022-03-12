@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <!-- Bootstrap CSS -->
+  <link rel="icon" href="/images/icon.jpg" type="image/x-icon" />
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
   <title>Edit URL - TinyApp</title>
 </head>
@@ -25,15 +26,15 @@
     <!-- ----------- -->
     <div class="row mt-2">
       <div class="col-sm-6">
-        <div class="card text-center border-warning">
+        <div class="card text-center border-warning h-100">
           <div class="card-header bg-warning">
             <h3>Edit</h2>
           </div>
           <div class="card-body bg-light text-black border border-warning">
             <p class="card-text">
-              <form class="form-align center" action="/urls/<%= shortURL %>?_method=PUT" method="POST">
+              <form class="form-inline justify-content-center" action="/urls/<%= shortURL %>?_method=PUT" method="POST">
                 <label for="longURL">New URL:</label>
-                <input class="form-control-align center" type="url" pattern="https?://.+" name="longURL" id="longURL" placeholder="<%= longURL %>" style="width: 300px; margin: 1em" required/>
+                <input class="form-control" type="url" pattern="https?://.+" name="longURL" id="longURL" placeholder="<%= longURL %>" style="width: 300px; margin: 1em" required/>
                 <button type="submit" class="btn btn-primary">Submit</button>
               </form>
             </p>
@@ -41,30 +42,30 @@
         </div>
       </div>
       <div class="col-sm-6">
-        <div class="card text-center border border-info">
+        <div class="card text-center border border-info h-100">
           <div class="card-header bg-info text-white">
-            <h3>ٰVisit Repor</h2>
+            <h3>ٰVisit Report</h2>
           </div>
           <div class="card-body bg-light text-center border border-info">
             <p class="card-text">
               <h4>
-                <span><a href="#" class="text-danger"><%= shortURL %></a></span>
-                <span> has been visited </span>
-                <span><a href="#" class="text-success"><%= totalVisitNum %></a></span>
+                <span class="text-danger"><%= shortURL %></span>
+                <span>&nbsp; has been visited &nbsp;</span>
+                <span class="text-success"><%= totalVisitNum %></span>
                 <% if (totalVisitNum === 1 || totalVisitNum === 0) { %>
-                  <span> time. </span>
+                  <span>&nbsp; time.</span>
                 <% } else { %>
-                  <span> times. </span>
+                  <span>&nbsp; times.</span>
                 <% } %>
               </h4>
               <% if (totalVisitNum) { %>
                 <h5>
-                  <span> It has been visited by </span>
-                  <span><a href="#" class="text-success"><%= uniqueVisitNum %></a></span>
+                  <span> It has been visited by &nbsp;</span>
+                  <span class="text-success"><%= uniqueVisitNum %></span>
                   <% if (uniqueVisitNum === 1) { %>
-                    <span> user. </span>
+                    <span>&nbsp; user.</span>
                   <% } else { %>
-                    <span> different users. </span>
+                    <span>&nbsp; different users.</span>
                   <% } %>
                 </h5>
               <% } else { %>
@@ -101,6 +102,10 @@
         </table>
       </div>
     </div>
+    <hr>
+    <P>
+      <a href="#">&nbsp;&nbsp;&nbsp;Back to Top</a>
+    </P>
   </div>
   <!-- Bootstrap JS -->
   <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>

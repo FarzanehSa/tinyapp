@@ -2,8 +2,9 @@
 <html lang="en">
 <head>
   <!-- Bootstrap CSS -->
+  <link rel="icon" href="/images/icon.jpg" type="image/x-icon" />
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
-  <title>Error - TinyApp</title>
+  <title>TinyApp</title>
 </head>
   
 <body>
@@ -13,12 +14,11 @@
   <main style="margin: 1em;">
     <% if (error.code) { %>
       <h3>Error <%= error.code %>: <%= error.h3 %></h3>
+      <h5><%= error.h5 %></h5>
     <% } else { %>
       <h2><%= error.h3 %></h2>
     <% } %>   
-    <h5><%= error.h5 %></h5>
     <img src="/images/<%= error.image %>.jpg" class="rounded mx-auto d-block" alt="Page Not Found">
-  <!-- width="600" height="600" -->
   </main>
   
   <!-- Bootstrap JS -->
